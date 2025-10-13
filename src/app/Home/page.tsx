@@ -1,10 +1,20 @@
 "use client";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import ValorantNavbar from "@/Components/Navbar";
 import Link from "next/link";
 import Image from "next/image";
 
 export default function HomePage() {
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    // Force animations to trigger on mount
+    setIsLoaded(false);
+    const timer = setTimeout(() => setIsLoaded(true), 50);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div className=" relative min-h-screen bg-gradient-to-br from-black via-[#0a0a0a] to-[#1a0005] text-white overflow-hidden font-['Valorant']">
       {/* Animated gradient light overlay */}
@@ -19,13 +29,13 @@ export default function HomePage() {
       <ValorantNavbar />
 
       {/* MAIN CONTENT */}
-      <section className=" flex flex-col md:flex-row justify-center items-center min-h-[calc(100vh-160px)] px-8 md:px-24 gap-20 md:gap-32 pt-36">
+      <section className=" flex flex-col md:flex-row justify-center items-center min-h-[calc(100vh-160px)] px-8 md:px-24 gap-20 md:gap-32 pt-4">
         {/* LEFT SIDE IMAGE */}
         <motion.div
+          key={`image-${isLoaded}`}
           initial={{ opacity: 0, x: -60, scale: 0.8 }}
-          whileInView={{ opacity: 1, x: 0, scale: 1 }}
+          animate={isLoaded ? { opacity: 1, x: 0, scale: 1 } : {}}
           transition={{ duration: 1, ease: "easeOut" }}
-          viewport={{ once: true }}
           className="relative w-64 h-64 sm:w-80 sm:h-80 md:w-[400px] md:h-[400px]"
         >
           {/* Main Image Container */}
@@ -96,10 +106,10 @@ export default function HomePage() {
 
         {/* RIGHT SIDE TEXT */}
         <motion.div
+          key={`text-${isLoaded}`}
           initial={{ opacity: 0, x: 60 }}
-          whileInView={{ opacity: 1, x: 0 }}
+          animate={isLoaded ? { opacity: 1, x: 0 } : {}}
           transition={{ duration: 1, delay: 0.2 }}
-          viewport={{ once: true }}
           className="max-w-xl text-center md:text-left font-sans"
         >
           <p className="text-gray-400 text-sm uppercase tracking-widest mb-2">
