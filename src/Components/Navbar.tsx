@@ -10,11 +10,13 @@ export default function ValorantNavbar() {
     { name: "HOME", href: "/" },
     { name: "ABOUT", href: "/about" },
     { name: "PROJECTS", href: "/projects" },
+    { name: "BLOG", href: "/" },
     { name: "CONTACT", href: "/contact" },
-  ];
+    
+  ]
 
   return (
-    <nav className="fixed top-0 left-0 w-full bg-black text-white font-['VALORANT'] z-50 border-b-2 border-red-600">
+    <nav className="fixed top-5 left-0 w-full text-white font-['VALORANT'] z-50">
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
         {/* Logo */}
         <Link href="/" className="text-3xl font-bold tracking-widest text-red-500 hover:text-white transition">
