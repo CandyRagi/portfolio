@@ -36,7 +36,6 @@ const cardVariants = {
   },
 };
 
-// Floating particle background
 const FloatingParticle: React.FC<{ delay: number; id: number }> = ({ delay, id }) => {
   const x = Math.sin(id * 12.9898) * 43758.5453;
   const y = Math.sin(id * 78.233) * 43758.5453;
@@ -58,7 +57,7 @@ export default function BlogPage() {
   const [search, setSearch] = useState("");
   const [selectedBlog, setSelectedBlog] = useState<Blog | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [activeCategory, setActiveCategory] = useState("all");
+  const [activeCategory, setActiveCategory] = useState<string>("all");
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -73,8 +72,8 @@ export default function BlogPage() {
           content: d.content ?? "",
           author: d.author ?? "Unknown",
           date: d.date ?? new Date().toISOString(),
-          image: d.image ?? undefined,
-          category: d.category ?? undefined,
+          image: d.image,
+          category: d.category,
           readTime: d.readTime ?? 3,
         };
       });
@@ -98,7 +97,16 @@ export default function BlogPage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedBlog]);
 
-  const categories = ["all", ...new Set(blogs.map((b) => b.category).filter(Boolean))];
+  // ✅ Strictly typed categories
+  const categories: string[] = [
+    "all",
+    ...new Set(
+      blogs
+        .map((b) => b.category)
+        .filter((c): c is string => Boolean(c))
+    ),
+  ];
+
   const filteredBlogs = blogs.filter((b) => {
     const term = search.toLowerCase();
     const matchSearch =
@@ -220,7 +228,6 @@ export default function BlogPage() {
                     )}
                   </div>
                 )}
-
                 <div className="p-4 flex flex-col h-full">
                   <h2 className="text-base font-bold mb-1 text-white group-hover:text-red-400 transition line-clamp-2">
                     {blog.title}
