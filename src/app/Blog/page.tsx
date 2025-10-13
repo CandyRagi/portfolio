@@ -1,5 +1,5 @@
 "use client";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
 import ValorantNavbar from "@/Components/Navbar";
 import { db } from "@/database/firebase";
@@ -18,7 +18,8 @@ interface Blog {
   readTime?: number;
 }
 
-const containerVariants = {
+// ✅ Properly typed variants
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -26,13 +27,13 @@ const containerVariants = {
   },
 };
 
-const cardVariants = {
+const cardVariants: Variants = {
   hidden: { opacity: 0, y: 40, scale: 0.95 },
   visible: {
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: { duration: 0.5, ease: "easeOut" },
+    transition: { duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }, // ✅ fixed easing
   },
 };
 
@@ -60,6 +61,7 @@ export default function BlogPage() {
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  // ✅ Load blogs from Firestore
   useEffect(() => {
     const q = query(collection(db, "blogs"), orderBy("date", "desc"));
     const unsub = onSnapshot(q, (snapshot) => {
@@ -82,12 +84,14 @@ export default function BlogPage() {
     return () => unsub();
   }, []);
 
+  // Trigger animation mount
   useEffect(() => {
     setIsLoaded(false);
     const timer = setTimeout(() => setIsLoaded(true), 100);
     return () => clearTimeout(timer);
   }, []);
 
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "/" && !selectedBlog) searchInputRef.current?.focus();
@@ -97,13 +101,11 @@ export default function BlogPage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedBlog]);
 
-  // ✅ Strictly typed categories
+  // ✅ Strongly typed categories
   const categories: string[] = [
     "all",
     ...new Set(
-      blogs
-        .map((b) => b.category)
-        .filter((c): c is string => Boolean(c))
+      blogs.map((b) => b.category).filter((c): c is string => Boolean(c))
     ),
   ];
 
