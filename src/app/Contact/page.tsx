@@ -5,7 +5,7 @@ import ValorantNavbar from "@/Components/Navbar";
 import Link from "next/link";
 import Image from "next/image";
 
-export default function JourneyPage() {
+export default function ContactPage() {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {

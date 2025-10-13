@@ -16,7 +16,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className=" relative min-h-screen bg-gradient-to-br from-black via-[#0a0a0a] to-[#1a0005] text-white overflow-hidden font-['Valorant']">
+    <div className=" relative min-h-screen bg-gradient-to-br from-black via-[#0a0a0a] to-[#1a0005] text-white overflow-hidden font-['Valorant'] pt-16 md:pt-20">
       {/* Animated gradient light overlay */}
       <motion.div
         initial={{ opacity: 0 }}

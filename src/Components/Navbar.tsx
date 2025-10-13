@@ -10,14 +10,15 @@ export default function ValorantNavbar() {
 
   const navLinks = [
     { name: "HOME", href: "/Home" },
-    { name: "PROJECTS", href: "/projects" },
+    { name: "PROJECTS", href: "/Projects" },
     { name: "JOURNEY", href: "/Journey" },
-    { name: "BLOG", href: "/" },
-    { name: "CONTACT", href: "/contact" },
+    { name: "BLOG", href: "/Blog" },
+    { name: "CONTACT", href: "/Contact" },
   ];
 
   return (
-    <nav className="top-5 left-0 w-full text-white font-['VALORANT'] z-50">
+    <nav className="fixed top-3 left-0 w-full text-white font-['VALORANT'] z-[9999]">
+
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
         {/* Logo */}
         <Link
