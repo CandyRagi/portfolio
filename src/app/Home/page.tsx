@@ -116,7 +116,7 @@ export default function HomePage() {
             Software Engineering Student
           </p>
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-3 leading-tight">
-            Hello I'm <br />
+            Hello I&apos;m <br />
             <span className=" font-['Valorant'] text-red-500">Ansh&nbsp;Tiwari</span>
           </h1>
           <p className="text-gray-300 text-lg leading-relaxed">
