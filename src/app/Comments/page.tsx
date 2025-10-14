@@ -1,6 +1,6 @@
 "use client";
-import { motion, Variants } from "framer-motion";
-import { useEffect, useState } from "react";
+import { motion, AnimatePresence, Variants } from "framer-motion";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import ValorantNavbar from "@/Components/Navbar";
 import { db } from "@/database/firebase";
 import {
@@ -12,6 +12,7 @@ import {
   serverTimestamp,
   Timestamp,
 } from "firebase/firestore";
+import { Search, X,Plus, Clock, User, Tag } from "lucide-react";
 
 interface Comment {
   id: string;
@@ -20,6 +21,43 @@ interface Comment {
   message: string;
   timestamp: Timestamp | null;
 }
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.02,
+      delayChildren: 0,
+    },
+  },
+};
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 20, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.3 },
+  },
+};
+
+const FloatingParticle: React.FC<{ delay: number; id: number }> = ({ delay, id }) => {
+  const x = Math.sin(id * 12.9898) * 43758.5453;
+  const y = Math.sin(id * 78.233) * 43758.5453;
+  const xPos = ((x - Math.floor(x)) * 100).toFixed(1);
+  const yPos = ((y - Math.floor(y)) * 100).toFixed(1);
+
+  return (
+    <motion.div
+      className="absolute w-1 h-1 bg-red-500/30 rounded-full blur-sm"
+      style={{ left: `${xPos}%`, top: `${yPos}%` }}
+      animate={{ y: [0, -30, 0], opacity: [0, 0.6, 0] }}
+      transition={{ duration: 3, delay, repeat: Infinity }}
+    />
+  );
+};
 
 export default function CommentsPage() {
   const [comments, setComments] = useState<Comment[]>([]);
@@ -33,6 +71,7 @@ export default function CommentsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const projects = [
     "fam app",
     "uniman",
@@ -42,64 +81,43 @@ export default function CommentsPage() {
     "other",
   ];
 
-  // Animation variants
-  const containerVariants: Variants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.05,
-        delayChildren: 0,
-      },
-    },
-  };
-
-  const itemVariants: Variants = {
-    hidden: { opacity: 0, y: 10 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.3 },
-    },
-  };
-
-  // Fetch comments from Firestore
   useEffect(() => {
-    setIsLoading(true);
-    try {
-      const q = query(collection(db, "comments"), orderBy("timestamp", "desc"));
-      const unsubscribe = onSnapshot(
-        q,
-        (snapshot) => {
-          const commentsArray: Comment[] = snapshot.docs.map((doc) => {
-            const data = doc.data();
-            return {
-              id: doc.id,
-              name: data.name || "Anonymous",
-              project: data.project || "other",
-              message: data.message || "",
-              timestamp: data.timestamp instanceof Timestamp ? data.timestamp : null,
-            } as Comment;
-          });
-          setComments(commentsArray);
-          setError(null);
-          setIsLoading(false);
-        },
-        (error) => {
-          console.error("Error fetching comments:", error);
-          setError("Failed to load comments. Please try again later.");
-          setIsLoading(false);
-        }
-      );
-      return () => unsubscribe();
-    } catch (err) {
-      console.error("Firestore error:", err);
-      setError("Error connecting to database.");
-      setIsLoading(false);
-    }
+    const q = query(collection(db, "comments"), orderBy("timestamp", "desc"));
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const commentsArray: Comment[] = snapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            name: data.name || "Anonymous",
+            project: data.project || "other",
+            message: data.message || "",
+            timestamp: data.timestamp instanceof Timestamp ? data.timestamp : null,
+          } as Comment;
+        });
+        setComments(commentsArray);
+        setError(null);
+        setIsLoading(false);
+      },
+      (error) => {
+        console.error("Error fetching comments:", error);
+        setError("Failed to load comments. Please try again later.");
+        setIsLoading(false);
+      }
+    );
+    return () => unsubscribe();
   }, []);
 
-  // Add new comment
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "/" && !modalOpen) searchInputRef.current?.focus();
+      if (e.key === "Escape") setModalOpen(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [modalOpen]);
+
   const handleAddComment = async () => {
     if (!message.trim()) {
       setError("Comment message cannot be empty.");
@@ -120,8 +138,6 @@ export default function CommentsPage() {
       setProject("fam app");
       setMessage("");
       setError(null);
-      
-      // Refresh the page after adding comment
       window.location.reload();
     } catch (err) {
       console.error("Error adding comment:", err);
@@ -131,10 +147,8 @@ export default function CommentsPage() {
     }
   };
 
-  // Format timestamp
-  const getDateString = (timestamp: Timestamp | null): string => {
+  const getDateString = useCallback((timestamp: Timestamp | null): string => {
     if (!timestamp) return "Unknown date";
-
     try {
       const date = timestamp.toDate();
       return date.toLocaleDateString("en-US", {
@@ -143,86 +157,119 @@ export default function CommentsPage() {
         day: "numeric",
       });
     } catch (err) {
-      console.error("Error converting timestamp:", err);
       return "Unknown date";
     }
-  };
+  }, []);
 
-  // Search + filter logic
-  const filteredComments = comments.filter((comment) => {
+  const filteredComments = useMemo(() => {
     const search = searchTerm.toLowerCase();
-    const messageMatch =
-      comment.message.toLowerCase().includes(search) ||
-      comment.name.toLowerCase().includes(search);
-    const projectMatch = !projectFilter || comment.project === projectFilter;
-    return messageMatch && projectMatch;
-  });
+    return comments.filter((comment) => {
+      const messageMatch =
+        comment.message.toLowerCase().includes(search) ||
+        comment.name.toLowerCase().includes(search);
+      const projectMatch = !projectFilter || comment.project === projectFilter;
+      return messageMatch && projectMatch;
+    });
+  }, [comments, searchTerm, projectFilter]);
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-black via-[#0a0a0a] to-[#1a0005] text-white overflow-hidden font-['Valorant'] pt-16 md:pt-20 pb-20">
-      {/* Animated gradient light overlay */}
+    <div className="relative min-h-screen bg-gradient-to-br from-black via-[#0a0a0a] to-[#1a0005] text-white font-['Valorant'] overflow-hidden">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 0.2 }}
         transition={{ duration: 2 }}
-        className="fixed inset-0 bg-gradient-to-r from-red-700 via-pink-600 to-purple-800 blur-[180px] -z-10 pointer-events-none"
+        className="fixed inset-0 bg-gradient-to-r from-red-700 via-pink-600 to-purple-800 blur-[180px] -z-10"
       />
 
-      {/* NAVBAR */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none -z-5">
+        {Array.from({ length: 20 }).map((_, i) => (
+          <FloatingParticle key={i} id={i} delay={i * 0.15} />
+        ))}
+      </div>
+
       <ValorantNavbar />
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-8 relative z-10">
+      <div className="container mx-auto px-4 py-8 relative z-10 pt-36">
         {error && (
           <div className="bg-red-500/20 border border-red-500 text-red-200 p-3 rounded-lg mb-4 text-center">
             {error}
           </div>
         )}
 
-        {/* Search + Filter Bar */}
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-          <input
-            type="text"
-            placeholder="Search comments..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full md:w-1/3 bg-[#1a1a1a] text-white p-3 rounded-lg border border-gray-600 focus:border-red-500 outline-none transition-colors"
-          />
-          <select
-            value={projectFilter}
-            onChange={(e) => setProjectFilter(e.target.value)}
-            className="w-full md:w-1/4 bg-[#1a1a1a] text-white p-3 rounded-lg border border-gray-600 focus:border-red-500 outline-none transition-colors"
-          >
-            <option value="">All Projects</option>
-            {projects.map((proj) => (
-              <option key={proj} value={proj}>
-                {proj}
-              </option>
-            ))}
-          </select>
-          <button
-            onClick={() => setModalOpen(true)}
-            className="w-full md:w-auto bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-colors font-semibold"
-          >
-            Add Comment
-          </button>
-        </div>
-
-        {/* Loading State */}
-        {isLoading && (
-          <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-r-2 border-red-500 border-b-2 border-l-transparent"></div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.05 }}
+          className="max-w-4xl mx-auto mb-12"
+        >
+          <div className="relative group">
+            <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-pink-600 rounded-full blur opacity-20 group-hover:opacity-40 transition duration-300" />
+            <div className="relative flex items-center gap-3 bg-white/5 backdrop-blur-xl border border-white/10 px-6 py-4 rounded-full shadow-2xl shadow-red-900/10 transition hover:border-red-500/50">
+              <Search size={20} className="text-red-400 flex-shrink-0" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                placeholder="Search comments... (Press / to focus)"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-transparent outline-none text-white placeholder-gray-500 font-['Valorant'] text-lg"
+              />
+              {searchTerm && (
+                <motion.button
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  onClick={() => setSearchTerm("")}
+                  className="text-gray-400 hover:text-white flex-shrink-0"
+                >
+                  <X size={18} />
+                </motion.button>
+              )}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setModalOpen(true)}
+                className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-full transition text-sm font-semibold flex-shrink-0"
+              >
+                + Add Comment
+              </motion.button>
+            </div>
           </div>
-        )}
+        </motion.div>
 
-        {/* Comments Display */}
-        {!isLoading && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="flex justify-center gap-3 mb-16 flex-wrap"
+        >
+          {["all", ...projects].map((proj) => (
+            <motion.button
+              key={proj}
+              onClick={() => setProjectFilter(proj === "all" ? "" : proj)}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              className={`px-5 py-2 rounded-full font-medium transition-all capitalize ${
+                projectFilter === (proj === "all" ? "" : proj)
+                  ? "bg-red-600 text-white shadow-lg shadow-red-600/50"
+                  : "bg-white/5 text-gray-300 border border-white/10 hover:border-red-500/50"
+              }`}
+            >
+              {proj}
+            </motion.button>
+          ))}
+        </motion.div>
+
+        {isLoading ? (
+          <div className="flex justify-center items-center min-h-[300px] w-full">
+            <div className="w-12 h-12 border-3 border-t-red-600 border-white/20 rounded-full animate-spin"></div>
+          </div>
+        ) : (
           <motion.div
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-max min-h-[200px]"
+            key={`${searchTerm}-${projectFilter}`}
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            key={`${searchTerm}-${projectFilter}`}
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-max min-h-[300px]"
           >
             {filteredComments.length > 0 ? (
               filteredComments.map((comment) => (
@@ -230,27 +277,29 @@ export default function CommentsPage() {
                   key={comment.id}
                   variants={itemVariants}
                   layout
-                  className="bg-[#1a1a1a] p-4 rounded-lg shadow-md border border-gray-700 hover:border-red-500/60 transition-all duration-300 hover:shadow-lg hover:shadow-red-500/10"
+                  className="relative bg-[#1a1a1a] p-4 rounded-lg border border-gray-700 hover:border-red-500/60 transition-all duration-300 hover:shadow-lg hover:shadow-red-500/10 group"
                 >
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-red-600 to-pink-600 rounded-lg opacity-0 group-hover:opacity-20 transition duration-300 blur -z-10" />
                   <div className="flex justify-between items-start gap-2 mb-3">
-                    <span className="text-red-500 font-bold capitalize text-xs bg-red-500/10 px-2 py-1 rounded flex-shrink-0">
+                    <span className="flex items-center gap-1 bg-red-600/80 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold capitalize flex-shrink-0">
+                      <Tag size={12} />
                       {comment.project}
                     </span>
-                    <span className="text-gray-400 text-xs whitespace-nowrap flex-shrink-0">
+                    <span className="text-gray-400 text-xs whitespace-nowrap">
                       {getDateString(comment.timestamp)}
                     </span>
                   </div>
-                  <h3 className="text-sm font-semibold mb-2 text-white truncate">
+                  <h3 className="text-sm font-semibold mb-2 text-white group-hover:text-red-400 transition truncate">
                     {comment.name}
                   </h3>
-                  <p className="text-gray-300 text-sm leading-relaxed break-words">
+                  <p className="text-gray-300 text-sm leading-relaxed break-words line-clamp-3">
                     {comment.message}
                   </p>
                 </motion.div>
               ))
             ) : (
               <div className="col-span-full flex justify-center items-center py-20">
-                <p className="text-gray-500 text-lg">
+                <p className="text-gray-400 text-lg">
                   {comments.length === 0
                     ? "No comments yet. Be the first!"
                     : "No comments match your filters."}
@@ -261,78 +310,96 @@ export default function CommentsPage() {
         )}
       </div>
 
-      {/* Modal for adding comment */}
-      {modalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+      <AnimatePresence>
+        {modalOpen && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3 }}
-            className="bg-[#1a1a1a] p-6 rounded-lg w-full max-w-md border border-red-500"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[999] p-4"
+            onClick={() => setModalOpen(false)}
           >
-            <h2 className="text-2xl font-bold mb-4 text-white">Add Comment</h2>
-
-            {error && (
-              <div className="bg-red-500/20 border border-red-500 text-red-200 p-3 rounded-lg mb-4 text-sm">
-                {error}
-              </div>
-            )}
-
-            <input
-              type="text"
-              placeholder="Name (or Anonymous)"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full bg-gray-800 text-white p-3 mb-4 rounded-lg border border-gray-600 focus:border-red-500 outline-none transition-colors"
-            />
-
-            <select
-              value={project}
-              onChange={(e) => setProject(e.target.value)}
-              className="w-full bg-gray-800 text-white p-3 mb-4 rounded-lg border border-gray-600 focus:border-red-500 outline-none transition-colors"
+            <motion.div
+              initial={{ scale: 0.85, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.85, opacity: 0, y: 20 }}
+              transition={{ duration: 0.2 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-md bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a] text-white p-6 rounded-3xl border border-red-700/30 shadow-2xl shadow-red-900/50"
             >
-              {projects.map((proj) => (
-                <option key={proj} value={proj}>
-                  {proj}
-                </option>
-              ))}
-            </select>
-
-            <textarea
-              placeholder="Your comment..."
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              maxLength={500}
-              className="w-full bg-gray-800 text-white p-3 mb-2 rounded-lg border border-gray-600 focus:border-red-500 outline-none transition-colors h-32 resize-none"
-            />
-            <p className="text-xs text-gray-400 mb-4">
-              {message.length}/500 characters
-            </p>
-
-            <div className="flex justify-end gap-4">
-              <button
-                onClick={() => {
-                  setModalOpen(false);
-                  setError(null);
-                }}
-                className="text-gray-300 hover:text-white transition-colors"
+              <motion.button
+                whileHover={{ scale: 1.1, rotate: 90 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setModalOpen(false)}
+                className="absolute top-4 right-4 p-2 bg-red-600 hover:bg-red-700 text-white rounded-full transition"
               >
-                Cancel
-              </button>
-              <button
-                onClick={handleAddComment}
-                disabled={isSubmitting}
-                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 disabled:bg-gray-600 transition-colors"
+                <X size={20} />
+              </motion.button>
+
+              <h2 className="text-2xl font-bold mb-4 text-white">Add Comment</h2>
+
+              {error && (
+                <div className="bg-red-500/20 border border-red-500 text-red-200 p-3 rounded-lg mb-4 text-sm">
+                  {error}
+                </div>
+              )}
+
+              <input
+                type="text"
+                placeholder="Name (or Anonymous)"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full bg-gray-800 text-white p-3 mb-4 rounded-lg border border-gray-600 focus:border-red-500 outline-none transition-colors"
+              />
+
+              <select
+                value={project}
+                onChange={(e) => setProject(e.target.value)}
+                className="w-full bg-gray-800 text-white p-3 mb-4 rounded-lg border border-gray-600 focus:border-red-500 outline-none transition-colors"
               >
-                {isSubmitting ? "Posting..." : "Post"}
-              </button>
-            </div>
+                {projects.map((proj) => (
+                  <option key={proj} value={proj}>
+                    {proj}
+                  </option>
+                ))}
+              </select>
+
+              <textarea
+                placeholder="Your comment..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                maxLength={500}
+                className="w-full bg-gray-800 text-white p-3 mb-2 rounded-lg border border-gray-600 focus:border-red-500 outline-none transition-colors h-32 resize-none"
+              />
+              <p className="text-xs text-gray-400 mb-4">
+                {message.length}/500 characters
+              </p>
+
+              <div className="flex justify-end gap-4">
+                <button
+                  onClick={() => {
+                    setModalOpen(false);
+                    setError(null);
+                  }}
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAddComment}
+                  disabled={isSubmitting}
+                  className="bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors font-semibold"
+                >
+                  {isSubmitting ? "Posting..." : "Post"}
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
 
-      {/* FOOTER */}
-      <footer className="absolute bottom-0 w-full py-4 text-center text-gray-500 text-sm font-['Valorant']">
+      <footer className="relative z-10 py-4 text-center text-gray-500 text-sm font-['Valorant']">
         © 2025 ANSH TIWARI
       </footer>
     </div>
