@@ -136,7 +136,7 @@ export default function HomePage() {
             </Link>
 
             <a
-              href="/Ansh_Tiwari_Resume.pdf"
+              href="/https://app.getfiledrop.com/share/4f116586-0e0b-460d-989b-7b7330ec7df0"
               download
               className="px-8 py-3 font-['Valorant'] uppercase tracking-widest rounded-full border-2 border-red-500 text-red-400 hover:bg-red-600 hover:text-white hover:border-transparent transition-all duration-300"
             >

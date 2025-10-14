@@ -13,7 +13,7 @@ export default function ValorantNavbar() {
     { name: "PROJECTS", href: "/Projects" },
     { name: "JOURNEY", href: "/Journey" },
     { name: "BLOG", href: "/Blog" },
-    { name: "CONTACT", href: "/Contact" },
+    { name: "COMMENTS", href: "/Comments" },
   ];
 
   return (
