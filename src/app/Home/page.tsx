@@ -129,7 +129,7 @@ export default function HomePage() {
           {/* BUTTONS */}
           <div className="mt-10 flex flex-wrap gap-6 justify-center md:justify-start items-center">
             <Link
-              href="/projects"
+              href="/Projects"
               className="group text-lg font-['Valorant'] tracking-widest uppercase text-red-500 hover:text-red-400 transition-all duration-300 flex items-center gap-2"
             >
               View Projects&nbsp;⟶
@@ -147,7 +147,7 @@ export default function HomePage() {
           {/* SOCIAL LINKS */}
           <div className="mt-8 flex gap-6 justify-center md:justify-start items-center">
             <a
-              href="https://github.com/yourusername"
+              href="https://github.com/CandyRagi"
               target="_blank"
               rel="noopener noreferrer"
               className="group relative"
@@ -175,7 +175,7 @@ export default function HomePage() {
             </a>
 
             <a
-              href="https://instagram.com/yourusername"
+              href="https://www.instagram.com/candy.exe22/"
               target="_blank"
               rel="noopener noreferrer"
               className="group relative"
@@ -189,7 +189,7 @@ export default function HomePage() {
             </a>
 
             <a
-              href="https://linkedin.com/in/yourusername"
+              href="https://www.linkedin.com/in/ansh-tiwari-a19986202/"
               target="_blank"
               rel="noopener noreferrer"
               className="group relative"
