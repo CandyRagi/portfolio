@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     }
 
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-2.5-flash", // Using 1.5 Flash for faster, cost-effective summaries. Change to "gemini-2.0-flash-exp" if you want the latest experimental model.
+      model: "gemini-2.5-flash", // Ussing 1.5 Flash for faster, cost-effective summaries. Change to "gemini-2.0-flash-exp" if you want the latest experimental model.
     });
 
     const prompt = `Provide a concise, engaging summary (50-60 words) of the following blog post. Make it readable and capture the main points, key insights, and tone. Title: "${title}"
