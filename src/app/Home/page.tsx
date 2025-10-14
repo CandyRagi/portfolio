@@ -12,6 +12,7 @@ export default function HomePage() {
     // Force animations to trigger on mount
     setIsLoaded(false);
     const timer = setTimeout(() => setIsLoaded(true), 50);
+    console.log(process.env.GOOGLE_GEMINI_API_KEY)
     return () => clearTimeout(timer);
   }, []);
 

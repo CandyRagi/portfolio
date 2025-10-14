@@ -264,13 +264,14 @@ export default function CommentsPage() {
             <div className="w-12 h-12 border-3 border-t-red-600 border-white/20 rounded-full animate-spin"></div>
           </div>
         ) : (
-          <motion.div
-            key={`${searchTerm}-${projectFilter}`}
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-max min-h-[300px]"
-          >
+          <div className="flex justify-items-center">
+  <motion.div
+    key={`${searchTerm}-${projectFilter}`}
+    variants={containerVariants}
+    initial="hidden"
+    animate="visible"
+    className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-max min-h-[300px] "
+  >
             {filteredComments.length > 0 ? (
               filteredComments.map((comment) => (
                 <motion.div
@@ -307,6 +308,7 @@ export default function CommentsPage() {
               </div>
             )}
           </motion.div>
+          </div>
         )}
       </div>
 

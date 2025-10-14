@@ -56,6 +56,9 @@ export default function BlogPage() {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [search, setSearch] = useState("");
   const [selectedBlog, setSelectedBlog] = useState<Blog | null>(null);
+  const [summaryBlog, setSummaryBlog] = useState<Blog | null>(null);
+  const [summary, setSummary] = useState<string | null>(null);
+  const [isLoadingSummary, setIsLoadingSummary] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
@@ -111,16 +114,18 @@ export default function BlogPage() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "/" && !selectedBlog && !uploadModalOpen) searchInputRef.current?.focus();
+      if (e.key === "/" && !selectedBlog && !uploadModalOpen && !summaryBlog) searchInputRef.current?.focus();
       if (e.key === "Escape") {
         setSelectedBlog(null);
+        setSummaryBlog(null);
+        setSummary(null);
         setUploadModalOpen(false);
         setPasswordModalOpen(false);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedBlog, uploadModalOpen, passwordModalOpen]);
+  }, [selectedBlog, uploadModalOpen, passwordModalOpen, summaryBlog]);
 
   const categories: string[] = ["all", ...blogCategories];
 
@@ -182,6 +187,37 @@ export default function BlogPage() {
 
   const handleAddBlogClick = () => {
     setPasswordModalOpen(true);
+  };
+
+  const handleSummarizeClick = async (blog: Blog) => {
+    setSummaryBlog(blog);
+    setIsLoadingSummary(true);
+    setSummary(null);
+
+    try {
+      const response = await fetch('/api', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: blog.content,
+          title: blog.title,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('API request failed');
+      }
+
+      const data = await response.json();
+      setSummary(data.summary || "No summary generated.");
+    } catch (err) {
+      console.error("Summary generation error:", err);
+      setSummary("Failed to generate summary. Please check your API key and try again.");
+    } finally {
+      setIsLoadingSummary(false);
+    }
   };
 
   const filteredBlogs = useMemo(() => {
@@ -334,7 +370,22 @@ export default function BlogPage() {
                       </div>
                     </div>
                     <p className="text-xs text-gray-600">{blog.date}</p>
-                    <div className="flex justify-end pt-3 border-t border-white/10">
+                    <div className="flex justify-between items-center pt-3 border-t border-white/10">
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSummarizeClick(blog);
+                        }}
+                        className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded-full text-xs font-semibold transition"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" fill="white"/>
+                          <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79-4-4-4z" fill="white"/>
+                        </svg>
+                        Summarize
+                      </motion.button>
                       <ArrowRight size={14} className="text-red-500" />
                     </div>
                   </div>
@@ -412,6 +463,62 @@ export default function BlogPage() {
               <div className="text-gray-300 leading-relaxed text-lg whitespace-pre-wrap">
                 {selectedBlog.content}
               </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {summaryBlog && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[999] p-4"
+            onClick={() => {
+              setSummaryBlog(null);
+              setSummary(null);
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.85, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.85, opacity: 0, y: 20 }}
+              transition={{ duration: 0.2 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-2xl bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a] text-white p-8 rounded-3xl border border-purple-700/30 shadow-2xl shadow-purple-900/50 overflow-y-auto max-h-[85vh]"
+            >
+              <motion.button
+                whileHover={{ scale: 1.1, rotate: 90 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  setSummaryBlog(null);
+                  setSummary(null);
+                }}
+                className="absolute top-6 right-6 p-2 bg-purple-600 hover:bg-purple-700 text-white rounded-full transition z-10"
+              >
+                <X size={24} />
+              </motion.button>
+
+              <h2 className="text-3xl font-bold mb-6 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                Summary of "{summaryBlog.title}"
+              </h2>
+
+              {isLoadingSummary ? (
+                <div className="flex flex-col items-center justify-center min-h-[200px]">
+                  <motion.div
+                    className="w-12 h-12 border-3 border-t-purple-600 border-white/20 rounded-full"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  />
+                  <p className="text-gray-400 mt-4">Generating summary...</p>
+                </div>
+              ) : (
+                <div className="text-gray-300 leading-relaxed text-lg whitespace-pre-wrap">
+                  {summary || "No summary available."}
+                </div>
+              )}
             </motion.div>
           </motion.div>
         )}
