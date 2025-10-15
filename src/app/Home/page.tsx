@@ -121,11 +121,14 @@ export default function HomePage() {
             <span className=" font-['Valorant'] text-red-500">Ansh&nbsp;Tiwari</span>
           </h1>
           <p className="text-gray-300 text-lg leading-relaxed">
-            IT Specialist & Full-Stack Developer | Pragmatic, delivery-oriented
-            professional passionate about building high-performance applications that
-            fuse <span className="text-white font-semibold">design</span> and{" "}
-            <span className="text-white font-semibold">functionality</span>.
-          </p>
+  IT Specialist & Full-Stack Developer | A pragmatic, delivery-oriented professional driven by curiosity
+  and a commitment to excellence. I'm passionate about crafting high-performance applications that fuse
+  <span className="text-white font-semibold"> design </span> and
+  <span className="text-white font-semibold"> functionality</span>,
+  creating experiences that feel intuitive and purposeful. I believe great technology should not only
+  solve problems efficiently but also inspire the people who use it. Constantly learning and refining my
+  approach, I aim to build products that balance creativity, structure, and real-world impact.
+</p>
 
           {/* BUTTONS */}
           <div className="mt-10 flex flex-wrap gap-6 justify-center md:justify-start items-center">
