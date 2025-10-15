@@ -125,8 +125,7 @@ export default function HomePage() {
   and a commitment to excellence. I&apos;m passionate about crafting high-performance applications that fuse
   <span className="text-white font-semibold"> design </span> and
   <span className="text-white font-semibold"> functionality</span>,
-  creating experiences that feel intuitive and purposeful.Constantly learning and refining my
-  approach, I aim to build products that balance creativity, structure, and real-world impact.
+  creating experiences that feel intuitive and purposeful.
 </p>
 
           {/* BUTTONS */}
