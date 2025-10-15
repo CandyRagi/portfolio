@@ -300,7 +300,7 @@ export default function CommentsPage() {
               ))
             ) : (
               <div className="col-span-full flex justify-center items-center py-20">
-                <p className="text-gray-400 text-lg">
+                <p className="text-gray-400 text-lg text-center w-full py-20">
                   {comments.length === 0
                     ? "No comments yet. Be the first!"
                     : "No comments match your filters."}
