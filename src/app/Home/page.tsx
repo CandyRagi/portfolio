@@ -120,7 +120,7 @@ export default function HomePage() {
             Hello I&apos;m <br />
             <span className=" font-['Valorant'] text-red-500">Ansh&nbsp;Tiwari</span>
           </h1>
-          <p className="text-gray-300 text-lg leading-relaxed">
+          <p className="text-gray-300 text-lg leading-relaxed pt-10">
   IT Specialist & Full-Stack Developer | A pragmatic, delivery-oriented professional driven by curiosity
   and a commitment to excellence. I&apos;m passionate about crafting high-performance applications that fuse
   <span className="text-white font-semibold"> design </span> and
