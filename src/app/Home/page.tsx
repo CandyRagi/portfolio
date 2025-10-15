@@ -111,7 +111,7 @@ export default function HomePage() {
           initial={{ opacity: 0, x: 60 }}
           animate={isLoaded ? { opacity: 1, x: 0 } : {}}
           transition={{ duration: 1, delay: 0.2 }}
-          className="max-w-xl text-center md:text-left font-sans"
+          className="max-w-xl text-center md:text-left font-sans pt-10"
         >
           <p className="text-gray-400 text-sm uppercase tracking-widest mb-2">
             Software Engineering Student
@@ -120,7 +120,7 @@ export default function HomePage() {
             Hello I&apos;m <br />
             <span className=" font-['Valorant'] text-red-500">Ansh&nbsp;Tiwari</span>
           </h1>
-          <p className="text-gray-300 text-lg leading-relaxed pt-10">
+          <p className="text-gray-300 text-lg leading-relaxed ">
   IT Specialist & Full-Stack Developer | A pragmatic, delivery-oriented professional driven by curiosity
   and a commitment to excellence. I&apos;m passionate about crafting high-performance applications that fuse
   <span className="text-white font-semibold"> design </span> and
