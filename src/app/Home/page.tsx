@@ -122,7 +122,7 @@ export default function HomePage() {
           </h1>
           <p className="text-gray-300 text-lg leading-relaxed">
   IT Specialist & Full-Stack Developer | A pragmatic, delivery-oriented professional driven by curiosity
-  and a commitment to excellence. I'm passionate about crafting high-performance applications that fuse
+  and a commitment to excellence. I&apos;m passionate about crafting high-performance applications that fuse
   <span className="text-white font-semibold"> design </span> and
   <span className="text-white font-semibold"> functionality</span>,
   creating experiences that feel intuitive and purposeful. I believe great technology should not only
