@@ -12,7 +12,7 @@ import {
   serverTimestamp,
   Timestamp,
 } from "firebase/firestore";
-import { Search, X,Plus, Clock, User, Tag } from "lucide-react";
+import { Search, X, Plus, Tag } from "lucide-react";
 
 interface Comment {
   id: string;
@@ -26,10 +26,7 @@ const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.02,
-      delayChildren: 0,
-    },
+    transition: { staggerChildren: 0.02, delayChildren: 0 },
   },
 };
 
@@ -156,7 +153,7 @@ export default function CommentsPage() {
         month: "short",
         day: "numeric",
       });
-    } catch (err) {
+    } catch {
       return "Unknown date";
     }
   }, []);
@@ -174,19 +171,20 @@ export default function CommentsPage() {
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-black via-[#0a0a0a] to-[#1a0005] text-white font-['Valorant'] overflow-hidden">
+      {/* Background */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 0.2 }}
         transition={{ duration: 2 }}
         className="fixed inset-0 bg-gradient-to-r from-red-700 via-pink-600 to-purple-800 blur-[180px] -z-10"
       />
-
       <div className="fixed inset-0 overflow-hidden pointer-events-none -z-5">
         {Array.from({ length: 20 }).map((_, i) => (
           <FloatingParticle key={i} id={i} delay={i * 0.15} />
         ))}
       </div>
 
+      {/* Navbar */}
       <ValorantNavbar />
 
       <div className="container mx-auto px-4 py-8 relative z-10 pt-36">
@@ -196,6 +194,7 @@ export default function CommentsPage() {
           </div>
         )}
 
+        {/* Search + Add Comment */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -236,6 +235,7 @@ export default function CommentsPage() {
           </div>
         </motion.div>
 
+        {/* Project Filter */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -259,59 +259,61 @@ export default function CommentsPage() {
           ))}
         </motion.div>
 
+        {/* Comments Grid */}
         {isLoading ? (
           <div className="flex justify-center items-center min-h-[300px] w-full">
             <div className="w-12 h-12 border-3 border-t-red-600 border-white/20 rounded-full animate-spin"></div>
           </div>
         ) : (
-          <div className="flex justify-items-center">
-  <motion.div
-    key={`${searchTerm}-${projectFilter}`}
-    variants={containerVariants}
-    initial="hidden"
-    animate="visible"
-    className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-max min-h-[300px] "
-  >
-            {filteredComments.length > 0 ? (
-              filteredComments.map((comment) => (
-                <motion.div
-                  key={comment.id}
-                  variants={itemVariants}
-                  layout
-                  className="relative bg-[#1a1a1a] p-4 rounded-lg border border-gray-700 hover:border-red-500/60 transition-all duration-300 hover:shadow-lg hover:shadow-red-500/10 group"
-                >
-                  <div className="absolute -inset-0.5 bg-gradient-to-r from-red-600 to-pink-600 rounded-lg opacity-0 group-hover:opacity-20 transition duration-300 blur -z-10" />
-                  <div className="flex justify-between items-start gap-2 mb-3">
-                    <span className="flex items-center gap-1 bg-red-600/80 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold capitalize flex-shrink-0">
-                      <Tag size={12} />
-                      {comment.project}
-                    </span>
-                    <span className="text-gray-400 text-xs whitespace-nowrap">
-                      {getDateString(comment.timestamp)}
-                    </span>
-                  </div>
-                  <h3 className="text-sm font-semibold mb-2 text-white group-hover:text-red-400 transition truncate">
-                    {comment.name}
-                  </h3>
-                  <p className="text-gray-300 text-sm leading-relaxed break-words line-clamp-3">
-                    {comment.message}
+          <div className="flex justify-center items-center w-full">
+            <motion.div
+              key={`${searchTerm}-${projectFilter}`}
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 justify-items-center items-start min-h-[300px] max-w-6xl w-full"
+            >
+              {filteredComments.length > 0 ? (
+                filteredComments.map((comment) => (
+                  <motion.div
+                    key={comment.id}
+                    variants={itemVariants}
+                    layout
+                    className="relative bg-[#1a1a1a] p-4 rounded-lg border border-gray-700 hover:border-red-500/60 transition-all duration-300 hover:shadow-lg hover:shadow-red-500/10 group w-full max-w-sm"
+                  >
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-red-600 to-pink-600 rounded-lg opacity-0 group-hover:opacity-20 transition duration-300 blur -z-10" />
+                    <div className="flex justify-between items-start gap-2 mb-3">
+                      <span className="flex items-center gap-1 bg-red-600/80 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold capitalize flex-shrink-0">
+                        <Tag size={12} />
+                        {comment.project}
+                      </span>
+                      <span className="text-gray-400 text-xs whitespace-nowrap">
+                        {getDateString(comment.timestamp)}
+                      </span>
+                    </div>
+                    <h3 className="text-sm font-semibold mb-2 text-white group-hover:text-red-400 transition truncate">
+                      {comment.name}
+                    </h3>
+                    <p className="text-gray-300 text-sm leading-relaxed break-words line-clamp-3">
+                      {comment.message}
+                    </p>
+                  </motion.div>
+                ))
+              ) : (
+                <div className="col-span-full flex justify-center items-center py-24">
+                  <p className="text-gray-400 text-lg text-center">
+                    {comments.length === 0
+                      ? "No comments yet. Be the first!"
+                      : "No comments match your filters."}
                   </p>
-                </motion.div>
-              ))
-            ) : (
-              <div className="col-span-full flex justify-center items-center py-20">
-                <p className="text-gray-400 text-lg text-center w-full py-20">
-                  {comments.length === 0
-                    ? "No comments yet. Be the first!"
-                    : "No comments match your filters."}
-                </p>
-              </div>
-            )}
-          </motion.div>
+                </div>
+              )}
+            </motion.div>
           </div>
         )}
       </div>
 
+      {/* Modal */}
       <AnimatePresence>
         {modalOpen && (
           <motion.div
@@ -401,6 +403,7 @@ export default function CommentsPage() {
         )}
       </AnimatePresence>
 
+      {/* Footer */}
       <footer className="absolute bottom-0 w-full py-4 text-center text-gray-500 text-sm font-['Valorant']">
         © 2025 ANSH TIWARI
       </footer>
