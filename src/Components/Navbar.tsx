@@ -11,8 +11,10 @@ export default function ValorantNavbar() {
   const navLinks = [
     { name: "HOME", href: "/Home" },
     { name: "PROJECTS", href: "/Projects" },
-    { name: "JOURNEY", href: "/Journey" },
+    
     { name: "BLOG", href: "/Blog" },
+
+    { name: "JOURNEY", href: "/Journey" },
     { name: "COMMENTS", href: "/Comments" },
   ];
 
