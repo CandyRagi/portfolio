@@ -15,7 +15,7 @@ export default function ValorantNavbar() {
     { name: "BLOG", href: "/Blog" },
 
     { name: "JOURNEY", href: "/Journey" },
-    { name: "COMMENTS", href: "/Comments" },
+    { name: "ABOUT ME", href: "/AboutMe" },
   ];
 
   return (
