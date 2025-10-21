@@ -35,7 +35,7 @@ export default function PnfPage() {
           transition={{ duration: 1 }}
           className="text-6xl md:text-8xl font-bold text-center text-white tracking-widest"
         >
-          Course Project Cant be Made Public <span className="text-red-500">;(</span>
+          Course Project<span className="text-red-500">;(</span>
         </motion.h1>
       </div>
 
