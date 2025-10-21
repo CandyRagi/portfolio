@@ -1,7 +1,7 @@
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, ReactNode } from "react";
-import { ChevronDown, ExternalLink, Github } from "lucide-react";
+import { BookOpen, ChevronDown, ExternalLink, Github } from "lucide-react";
 import ValorantNavbar from "@/Components/Navbar";
 
 interface Project {
@@ -29,7 +29,7 @@ const projectsData: Project[] = [
       "UniMan is a progressive web application designed to streamline the management of construction materials for stores and sites. It offers features such as inventory tracking, order management, and real-time updates, ensuring efficient material handling and reducing delays in construction projects.",
     tags: ["NextJS", "Firebase", "Express", "TypeScript React", "TailwindCSS"],
     image: "gradient",
-    link: "#",
+    link: "https://oneman-alpha.vercel.app/",
     github: "https://github.com/CandyRagi/oneman",
     Readme: "#",
     animation: "slideScale",
@@ -74,7 +74,7 @@ const projectsData: Project[] = [
     description: "It is a JavaFx Application that uses Sockets to create a 2D territory control game. Players can control territories, build structures, and compete against each other in real-time on  local network.",
     tags: ["JavaFx", "TCP/IP", "MVC","Multithreaded"],
     image: "gradient",
-    link: "#",
+    link: "https://www.youtube.com/watch?v=vuv7Zqasxaw",
     github: "https://github.com/manavbansal1/Team-Box-Conquest.git",
     Readme: "#",
     animation: "glitch",
@@ -260,7 +260,7 @@ export default function ProjectsPage() {
                   className="flex items-center gap-2 px-8 py-3 border-2 border-white/50 text-white rounded-full font-bold hover:bg-white/10 transition-colors"
                 >
                   Readme
-                  <Github size={18} />
+                  <BookOpen size={18} />
                 </a>
               </div>
             </motion.div>
