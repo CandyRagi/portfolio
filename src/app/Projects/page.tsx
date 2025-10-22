@@ -2,7 +2,10 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, ReactNode } from "react";
 import { BookOpen, ChevronDown, ExternalLink, Github } from "lucide-react";
-import ValorantNavbar from "@/Components/Navbar";
+
+// Placeholder - import your actual ValorantNavbar component
+import Navbar from "@/Components/Navbar";
+const ValorantNavbar = () => <Navbar />;
 
 interface Project {
   id: number;
@@ -17,11 +20,29 @@ interface Project {
   animation: string;
   bgGradient: string;
   accentColor: string;
+  category: string;
 }
 
 const projectsData: Project[] = [
+
   {
     id: 1,
+    title: "Study Sage",
+    subtitle: "From Notes to Mastery",
+    description:
+      "Study Sage is an intelligent study companion app that transforms your notes into mastery through AI-powered insights. Built with Kotlin for native Android performance, it features multiplayer study games powered by Ktor for real-time collaboration. The app leverages Gemini AI to generate smart summaries, quizzes, and study guides from your notes, with all data securely stored in Firebase for seamless cross-device synchronization.",
+    tags: ["Kotlin", "NodeJS", "Firebase", "Ktor"],
+    image: "gradient",
+    link: "#",
+    github: "https://github.com/manavbansal1/StudySage.git",
+    Readme: "#",
+    animation: "tiles",
+    bgGradient: "from-slate-900 via-purple-900 to-black",
+    accentColor: "from-cyan-500 via-blue-600 to-purple-700",
+    category: "Mobile Application",
+  },
+  {
+    id: 2,
     title: "UniMan",
     subtitle:
       "A progressive web app for Store/Site Material management for Construction purposes primarily",
@@ -33,12 +54,12 @@ const projectsData: Project[] = [
     github: "https://github.com/CandyRagi/oneman",
     Readme: "#",
     animation: "slideScale",
-  
     bgGradient: "from-black via-[#0a0a0a] to-[#1a0005]",
     accentColor: "from-red-700 via-pink-600 to-purple-800",
+    category: "Web Application",
   },
   {
-    id: 2,
+    id: 5,
     title: "FAM APP",
     subtitle: "Cross Platform Music Application",
     description:
@@ -51,10 +72,10 @@ const projectsData: Project[] = [
     animation: "tiles",
     bgGradient: "from-slate-900 via-purple-900 to-black",
     accentColor: "from-cyan-500 via-blue-600 to-purple-700",
-    
+    category: "Mobile Application",
   },
   {
-    id: 3,
+    id: 6,
     title: "Rizzervit",
     subtitle: "A movie booking website",
     description: "Rizzervit is a movie booking website that allows users to browse and book tickets for movies at various theaters. It features a user-friendly interface, real-time seat selection, and Rizz +1000 perk.",
@@ -66,6 +87,7 @@ const projectsData: Project[] = [
     animation: "fadeRotate",
     bgGradient: "from-green-950 via-emerald-900 to-black",
     accentColor: "from-green-400 via-emerald-500 to-teal-600",
+    category: "Web Application",
   },
   {
     id: 4,
@@ -80,9 +102,10 @@ const projectsData: Project[] = [
     animation: "glitch",
     bgGradient: "from-orange-950 via-red-900 to-black",
     accentColor: "from-orange-500 via-red-600 to-pink-700",
+    category: "Game",
   },
   {
-    id: 5,
+    id: 3,
     title: "Unix Shell Clone",
     subtitle: "A custom Unix shell implemented in C",
     description: "This project is a custom Unix shell implemented in C that mimics the behavior of standard Unix shells. It supports features like command execution, piping, redirection, and built-in commands, providing a hands-on understanding of shell internals and process management.",
@@ -94,6 +117,7 @@ const projectsData: Project[] = [
     animation: "flipPulse",
     bgGradient: "from-indigo-950 via-purple-900 to-black",
     accentColor: "from-indigo-400 via-purple-500 to-pink-600",
+    category: "System Programming",
   },
 ];
 
@@ -161,30 +185,101 @@ const InteractiveObject = ({ type, x, y }: InteractiveObjectProps) => {
 // ------------------ MAIN PAGE -------------------
 export default function ProjectsPage() {
   const [currentProject, setCurrentProject] = useState<number>(0);
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  // Get unique categories
+  const categories = ["All", ...Array.from(new Set(projectsData.map(p => p.category)))];
+
+  // Filter projects by category
+  const filteredProjects = selectedCategory === "All" 
+    ? projectsData 
+    : projectsData.filter(p => p.category === selectedCategory);
 
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
       if (e.deltaY > 0) {
         // scroll down → next project (wrap around)
-        setCurrentProject((prev) => (prev + 1) % projectsData.length);
+        setCurrentProject((prev) => (prev + 1) % filteredProjects.length);
       } else if (e.deltaY < 0) {
         // scroll up → previous project (wrap around)
         setCurrentProject(
           (prev) =>
-            (prev - 1 + projectsData.length) % projectsData.length // ensure positive modulo
+            (prev - 1 + filteredProjects.length) % filteredProjects.length
         );
       }
     };
 
     window.addEventListener("wheel", handleWheel, { passive: true });
     return () => window.removeEventListener("wheel", handleWheel);
-  }, []);
+  }, [filteredProjects.length]);
 
-  const project = projectsData[currentProject];
+  // Reset to first project when category changes
+  useEffect(() => {
+    setCurrentProject(0);
+  }, [selectedCategory]);
+
+  const project = filteredProjects[currentProject];
+
+  if (filteredProjects.length === 0) {
+    return (
+      <div className="relative w-full h-screen overflow-x-hidden bg-black">
+        <ValorantNavbar />
+        <div className="flex items-center justify-center h-full">
+          <p className="text-white text-xl">No projects found in this category.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-screen overflow-x-hidden">
       <ValorantNavbar />
+
+      {/* Category Dropdown - Top Right */}
+      <div className="fixed top-4 right-6 z-9999">
+        <div className="relative">
+          <button
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white font-medium hover:bg-white/20 transition-all flex items-center gap-2 min-w-[180px] justify-between"
+          >
+            <span>{selectedCategory}</span>
+            <ChevronDown 
+              size={18} 
+              className={`transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
+            />
+          </button>
+
+          <AnimatePresence>
+            {isDropdownOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="absolute top-full mt-2 right-0 bg-black/90 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden min-w-[180px]"
+              >
+                {categories.map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => {
+                      setSelectedCategory(category);
+                      setIsDropdownOpen(false);
+                    }}
+                    className={`w-full px-6 py-3 text-left hover:bg-white/10 transition-colors ${
+                      selectedCategory === category
+                        ? "bg-white/20 text-white font-semibold"
+                        : "text-white/70"
+                    }`}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
 
       <AnimatePresence mode="wait">
         <motion.div
@@ -267,7 +362,7 @@ export default function ProjectsPage() {
 
             {/* Dots navigation */}
             <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-3">
-              {projectsData.map((_, i) => (
+              {filteredProjects.map((_, i) => (
                 <button
                   key={i}
                   onClick={() => setCurrentProject(i)}

@@ -34,6 +34,12 @@ const cardVariants: Variants = {
     scale: 1,
     transition: { duration: 0.3 },
   },
+  exit: {
+    opacity: 0,
+    y: -30,
+    scale: 0.95,
+    transition: { duration: 0.2 },
+  },
 };
 
 const FloatingParticle: React.FC<{ delay: number; id: number }> = ({ delay, id }) => {
@@ -67,6 +73,7 @@ export default function BlogPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoadingBlogs, setIsLoadingBlogs] = useState(true);
+  const [visibleCards, setVisibleCards] = useState<Set<string>>(new Set());
 
   const [formData, setFormData] = useState({
     title: "",
@@ -81,6 +88,48 @@ export default function BlogPage() {
   const blogCategories = ["IRL", "Projects", "Anime", "Kdrama", "Web series", "Games", "others"];
   const searchInputRef = useRef<HTMLInputElement>(null);
   const PASSWORD = "Candy6001";
+
+  // Calculate filteredBlogs FIRST before using it in useEffect
+  const filteredBlogs = useMemo(() => {
+    const term = search.toLowerCase();
+    return blogs.filter((b) => {
+      const matchSearch =
+        b.title.toLowerCase().includes(term) ||
+        b.subtitle.toLowerCase().includes(term) ||
+        b.author.toLowerCase().includes(term);
+      const matchCategory = activeCategory === "all" || b.category === activeCategory;
+      return matchSearch && matchCategory;
+    });
+  }, [blogs, search, activeCategory]);
+
+  const observerCallback = useCallback((entries: IntersectionObserverEntry[]) => {
+    entries.forEach((entry) => {
+      const cardId = entry.target.getAttribute('data-card-id');
+      if (cardId) {
+        setVisibleCards((prev) => {
+          const newSet = new Set(prev);
+          if (entry.isIntersecting) {
+            newSet.add(cardId);
+          } else {
+            newSet.delete(cardId);
+          }
+          return newSet;
+        });
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(observerCallback, {
+      threshold: 0.1,
+      rootMargin: '50px',
+    });
+
+    const cards = document.querySelectorAll('[data-card-id]');
+    cards.forEach((card) => observer.observe(card));
+
+    return () => observer.disconnect();
+  }, [filteredBlogs, observerCallback]);
 
   useEffect(() => {
     const q = query(collection(db, "blogs"), orderBy("date", "desc"));
@@ -220,18 +269,6 @@ export default function BlogPage() {
     }
   };
 
-  const filteredBlogs = useMemo(() => {
-    const term = search.toLowerCase();
-    return blogs.filter((b) => {
-      const matchSearch =
-        b.title.toLowerCase().includes(term) ||
-        b.subtitle.toLowerCase().includes(term) ||
-        b.author.toLowerCase().includes(term);
-      const matchCategory = activeCategory === "all" || b.category === activeCategory;
-      return matchSearch && matchCategory;
-    });
-  }, [blogs, search, activeCategory]);
-
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-black via-[#0a0a0a] to-[#1a0005] text-white font-['Valorant'] overflow-hidden">
       <motion.div
@@ -329,7 +366,11 @@ export default function BlogPage() {
             filteredBlogs.map((blog) => (
               <motion.div
                 key={blog.id}
+                data-card-id={blog.id}
                 variants={cardVariants}
+                initial="hidden"
+                animate={visibleCards.has(blog.id) ? "visible" : "hidden"}
+                exit="exit"
                 layout
                 className="group relative w-[300px] h-[320px] cursor-pointer"
                 onClick={() => setSelectedBlog(blog)}

@@ -1,7 +1,7 @@
 "use client";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import ValorantNavbar from "@/Components/Navbar";
+import ValorantNavbar from "../../Components/Navbar";
 import Link from "next/link";
 import Image from "next/image";
 
