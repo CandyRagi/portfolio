@@ -14,14 +14,14 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-black text-white overflow-hidden font-['Valorant'] flex flex-col items-center justify-center px-6 relative">
+    <div className="min-h-screen bg-black text-white overflow-hidden font-['Valorant'] flex flex-col items-center justify-center px-4 sm:px-6 py-8 sm:py-12 relative">
       {/* HERO TEXT */}
-      <div className="text-center mt-16">
+      <div className="text-center mt-8 sm:mt-12 md:mt-16">
         <motion.h1
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1 }}
-          className="text-5xl sm:text-6xl md:text-8xl font-bold tracking-widest"
+          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-widest leading-tight"
         >
           WELCOME&nbsp;<span className="text-red-600">AGENT</span>
         </motion.h1>
@@ -30,7 +30,7 @@ export default function HomePage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6, duration: 1 }}
-          className="mt-4 text-lg sm:text-xl md:text-2xl text-gray-400"
+          className="mt-3 sm:mt-4 text-base sm:text-lg md:text-xl lg:text-2xl text-gray-400 px-4"
         >
           Who&apos;s in the queue this time?
         </motion.p>
@@ -41,17 +41,18 @@ export default function HomePage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1, duration: 1 }}
-        className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8"
+        className="mt-8 sm:mt-12 md:mt-16 grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 max-w-7xl w-full"
       >
         {roles.map((role, index) => (
           <motion.div
             key={index}
-            whileHover={{ scale: 1.1 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             transition={{ duration: 0.3 }}
-            onClick={() => router.push("/Home")} // 👈 redirect on click
+            onClick={() => router.push("/Home")}
             className="flex flex-col items-center cursor-pointer group"
           >
-            <div className="relative w-40 h-40 md:w-52 md:h-52 overflow-hidden rounded-lg shadow-lg  group-hover:border-red-500 transition-all duration-300">
+            <div className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-52 lg:h-52 overflow-hidden rounded-lg shadow-lg border-2 border-transparent group-hover:border-red-500 transition-all duration-300">
               <Image
                 src={role.src}
                 alt={role.title}
@@ -59,12 +60,18 @@ export default function HomePage() {
                 className="object-cover transition-transform duration-300 group-hover:scale-110"
               />
             </div>
-            <p className="mt-3 text-lg tracking-widest group-hover:text-red-500 transition-colors duration-300">
+            <p className="mt-2 sm:mt-3 text-sm sm:text-base md:text-lg tracking-widest group-hover:text-red-500 transition-colors duration-300 text-center">
               {role.title}
             </p>
           </motion.div>
         ))}
       </motion.div>
+
+      {/* Background decorative elements */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
+        <div className="absolute top-10 left-10 w-32 h-32 sm:w-48 sm:h-48 bg-red-600/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-10 right-10 w-32 h-32 sm:w-48 sm:h-48 bg-red-600/10 rounded-full blur-3xl"></div>
+      </div>
     </div>
   );
 }

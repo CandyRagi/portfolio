@@ -27,17 +27,6 @@ export default function AboutMe() {
       {/* NAVBAR */}
       <ValorantNavbar />
 
-      {/* MAIN CENTER TEXT */}
-      <div className="flex items-center justify-center h-[80vh]">
-        <motion.h1
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1 }}
-          className="text-6xl md:text-8xl font-bold text-center text-white tracking-widest"
-        >
-          Coming soon <span className="text-red-500">;)</span>
-        </motion.h1>
-      </div>
 
       {/* FOOTER */}
       <footer className="absolute bottom-0 w-full py-4 text-center text-gray-500 text-sm font-['Valorant']">

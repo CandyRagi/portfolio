@@ -18,30 +18,8 @@ export default function HomePage() {
     return () => clearTimeout(timer);
   }, []);
 
-  const scrollToNext = () => {
-    if (currentSection === 0) {
-      setCurrentSection(1);
-    }
-  };
 
-  const scrollToPrevious = () => {
-    if (currentSection === 1) {
-      setCurrentSection(0);
-    }
-  };
 
-  useEffect(() => {
-    const handleWheel = (e: WheelEvent) => {
-      if (e.deltaY > 0 && currentSection === 0) {
-        scrollToNext();
-      } else if (e.deltaY < 0 && currentSection === 1) {
-        scrollToPrevious();
-      }
-    };
-
-    window.addEventListener("wheel", handleWheel, { passive: true });
-    return () => window.removeEventListener("wheel", handleWheel);
-  }, [currentSection]);
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-black via-[#0a0a0a] to-[#1a0005] text-white overflow-hidden font-['Valorant']">
@@ -248,32 +226,7 @@ export default function HomePage() {
         
       </motion.div>
 
-      {/* SECTION 2 - Coming Soon */}
-      <motion.div
-        initial={{ rotateX: 90, z: -500 }}
-        animate={{
-          rotateX: currentSection === 1 ? 0 : 90,
-          z: currentSection === 1 ? 0 : -500,
-          opacity: currentSection === 1 ? 1 : 0,
-        }}
-        transition={{ duration: 0.8, ease: "easeInOut" }}
-        style={{ transformStyle: "preserve-3d", transformOrigin: "center top" }}
-        className="absolute inset-0 flex items-center justify-center h-screen pt-16 md:pt-20"
-      >
-        <motion.h1
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ 
-            opacity: currentSection === 1 ? 1 : 0, 
-            scale: currentSection === 1 ? 1 : 0.9 
-          }}
-          transition={{ delay: 0.4, duration: 0.6 }}
-          className="text-6xl md:text-8xl font-bold text-center text-white tracking-widest"
-        >
-          Coming soon <span className="text-red-500">;)</span>
-        </motion.h1>
-
-      </motion.div>
-
+    
       {/* FLOATING BACKGROUND LIGHTS */}
       <motion.div
         animate={{
