@@ -140,7 +140,7 @@ const InteractiveObject = ({ type, x, y }: InteractiveObjectProps) => {
         }}
         transition={{ duration: 0.6 }}
         style={{ perspective: 1000 }}
-        className="w-16 h-16 bg-gradient-to-br from-red-500 to-purple-600 rounded-lg"
+        className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-red-500 to-purple-600 rounded-lg"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       />
@@ -151,7 +151,7 @@ const InteractiveObject = ({ type, x, y }: InteractiveObjectProps) => {
         transition={{ duration: 0.3 }}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className="w-16 h-16 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-full shadow-lg shadow-cyan-500/50"
+        className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-full shadow-lg shadow-cyan-500/50"
       />
     ),
     pyramid: (
@@ -162,9 +162,9 @@ const InteractiveObject = ({ type, x, y }: InteractiveObjectProps) => {
         onMouseLeave={() => setIsHovered(false)}
         className="w-0 h-0 border-l-8 border-r-8 border-b-16 border-l-transparent border-r-transparent border-b-green-500"
         style={{
-          borderLeftWidth: "20px",
-          borderRightWidth: "20px",
-          borderBottomWidth: "35px",
+          borderLeftWidth: "15px",
+          borderRightWidth: "15px",
+          borderBottomWidth: "26px",
         }}
       />
     ),
@@ -172,7 +172,7 @@ const InteractiveObject = ({ type, x, y }: InteractiveObjectProps) => {
 
   return (
     <motion.div
-      className="absolute"
+      className="absolute hidden sm:block"
       style={{ left: x, top: y }}
       animate={{ y: [0, -10, 0] }}
       transition={{ repeat: Infinity, duration: 3 }}
@@ -187,6 +187,11 @@ export default function ProjectsPage() {
   const [currentProject, setCurrentProject] = useState<number>(0);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
+  const [touchEnd, setTouchEnd] = useState<{ x: number; y: number } | null>(null);
+
+  // Minimum swipe distance (in px)
+  const minSwipeDistance = 50;
 
   // Get unique categories
   const categories = ["All", ...Array.from(new Set(projectsData.map(p => p.category)))];
@@ -195,6 +200,60 @@ export default function ProjectsPage() {
   const filteredProjects = selectedCategory === "All" 
     ? projectsData 
     : projectsData.filter(p => p.category === selectedCategory);
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart({
+      x: e.targetTouches[0].clientX,
+      y: e.targetTouches[0].clientY,
+    });
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd({
+      x: e.targetTouches[0].clientX,
+      y: e.targetTouches[0].clientY,
+    });
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distanceX = touchStart.x - touchEnd.x;
+    const distanceY = touchStart.y - touchEnd.y;
+    
+    const isLeftSwipe = distanceX > minSwipeDistance;
+    const isRightSwipe = distanceX < -minSwipeDistance;
+    const isUpSwipe = distanceY > minSwipeDistance;
+    const isDownSwipe = distanceY < -minSwipeDistance;
+
+    // Determine which direction had more movement
+    const isHorizontal = Math.abs(distanceX) > Math.abs(distanceY);
+
+    if (isHorizontal) {
+      // Horizontal swipe
+      if (isLeftSwipe) {
+        // Swipe left → next project
+        setCurrentProject((prev) => (prev + 1) % filteredProjects.length);
+      } else if (isRightSwipe) {
+        // Swipe right → previous project
+        setCurrentProject(
+          (prev) => (prev - 1 + filteredProjects.length) % filteredProjects.length
+        );
+      }
+    } else {
+      // Vertical swipe
+      if (isUpSwipe) {
+        // Swipe up → next project
+        setCurrentProject((prev) => (prev + 1) % filteredProjects.length);
+      } else if (isDownSwipe) {
+        // Swipe down → previous project
+        setCurrentProject(
+          (prev) => (prev - 1 + filteredProjects.length) % filteredProjects.length
+        );
+      }
+    }
+  };
 
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
@@ -225,25 +284,30 @@ export default function ProjectsPage() {
     return (
       <div className="relative w-full h-screen overflow-x-hidden bg-black">
         <ValorantNavbar />
-        <div className="flex items-center justify-center h-full">
-          <p className="text-white text-xl">No projects found in this category.</p>
+        <div className="flex items-center justify-center h-full px-4">
+          <p className="text-white text-lg sm:text-xl text-center">No projects found in this category.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="relative w-full h-screen overflow-x-hidden">
+    <div 
+      className="relative w-full h-screen overflow-x-hidden"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
       <ValorantNavbar />
 
       {/* Category Dropdown - Top Right */}
-      <div className="fixed top-4 right-6 z-9999">
+      <div className="fixed top-4 right-4 sm:right-6 z-9999">
         <div className="relative">
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white font-medium hover:bg-white/20 transition-all flex items-center gap-2 min-w-[180px] justify-between"
+            className="px-4 sm:px-6 py-2 sm:py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white text-sm sm:text-base font-medium hover:bg-white/20 transition-all flex items-center gap-2 min-w-[140px] sm:min-w-[180px] justify-between"
           >
-            <span>{selectedCategory}</span>
+            <span className="truncate">{selectedCategory}</span>
             <ChevronDown 
               size={18} 
               className={`transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
@@ -257,7 +321,7 @@ export default function ProjectsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
-                className="absolute top-full mt-2 right-0 bg-black/90 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden min-w-[180px]"
+                className="absolute top-full mt-2 right-0 bg-black/90 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden min-w-[140px] sm:min-w-[180px]"
               >
                 {categories.map((category) => (
                   <button
@@ -266,7 +330,7 @@ export default function ProjectsPage() {
                       setSelectedCategory(category);
                       setIsDropdownOpen(false);
                     }}
-                    className={`w-full px-6 py-3 text-left hover:bg-white/10 transition-colors ${
+                    className={`w-full px-4 sm:px-6 py-2 sm:py-3 text-left text-sm sm:text-base hover:bg-white/10 transition-colors ${
                       selectedCategory === category
                         ? "bg-white/20 text-white font-semibold"
                         : "text-white/70"
@@ -295,79 +359,79 @@ export default function ProjectsPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.2 }}
             transition={{ duration: 2 }}
-            className={`absolute inset-0 bg-gradient-to-r ${project.accentColor} blur-[180px] -z-10`}
+            className={`absolute inset-0 bg-gradient-to-r ${project.accentColor} blur-[120px] sm:blur-[180px] -z-10`}
           />
 
-          {/* Floating objects */}
+          {/* Floating objects - hidden on mobile for better performance */}
           <InteractiveObject type="cube" x="10%" y="15%" />
           <InteractiveObject type="sphere" x="85%" y="20%" />
           <InteractiveObject type="pyramid" x="50%" y="75%" />
 
           {/* Project content */}
-          <div className="relative w-full h-full flex flex-col items-center justify-center px-6 pt-20">
+          <div className="relative w-full h-full flex flex-col items-center justify-center px-4 sm:px-6 pt-16 sm:pt-20 pb-24 sm:pb-32 overflow-y-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.6 }}
-              className="text-center max-w-4xl"
+              className="text-center max-w-4xl w-full"
             >
-              <p className="text-sm md:text-base uppercase tracking-widest text-gray-400 mb-4 font-['Valorant']">
+              <p className="text-xs sm:text-sm md:text-base uppercase tracking-widest text-gray-400 mb-3 sm:mb-4 font-['Valorant']">
                 {`0${currentProject + 1}`}
               </p>
-              <h1 className="text-5xl md:text-7xl font-bold mb-4 font-['Valorant'] text-white">
+              <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold mb-3 sm:mb-4 font-['Valorant'] text-white leading-tight">
                 {project.title}
               </h1>
-              <p className="text-lg md:text-2xl text-gray-300 mb-6 font-['Valorant']">
+              <p className="text-base sm:text-lg md:text-2xl text-gray-300 mb-4 sm:mb-6 font-['Valorant'] px-2">
                 {project.subtitle}
               </p>
-              <p className="text-gray-400 mb-8 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-sm sm:text-base text-gray-400 mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed px-2">
                 {project.description}
               </p>
 
-              <div className="flex flex-wrap justify-center gap-3 mb-12">
+              <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-8 sm:mb-12 px-2">
                 {project.tags.map((tag, i) => (
                   <span
                     key={i}
-                    className="px-4 py-2 border border-white/20 rounded-full text-sm text-white/70 hover:bg-white/10 transition-colors"
+                    className="px-3 py-1.5 sm:px-4 sm:py-2 border border-white/20 rounded-full text-xs sm:text-sm text-white/70 hover:bg-white/10 transition-colors"
                   >
                     {tag}
                   </span>
                 ))}
               </div>
 
-              <div className="flex justify-center gap-6 mb-16">
+              <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 md:gap-6 mb-12 sm:mb-16 px-2">
                 <a
                   href={project.link}
-                  className="flex items-center gap-2 px-8 py-3 bg-white text-black rounded-full font-bold hover:bg-gray-100 transition-colors"
+                  className="flex items-center justify-center gap-2 px-6 sm:px-8 py-2.5 sm:py-3 bg-white text-black rounded-full text-sm sm:text-base font-bold hover:bg-gray-100 transition-colors"
                 >
                   View Project
-                  <ExternalLink size={18} />
+                  <ExternalLink size={16} className="sm:w-[18px] sm:h-[18px]" />
                 </a>
                 <a
                   href={project.github}
-                  className="flex items-center gap-2 px-8 py-3 border-2 border-white/50 text-white rounded-full font-bold hover:bg-white/10 transition-colors"
+                  className="flex items-center justify-center gap-2 px-6 sm:px-8 py-2.5 sm:py-3 border-2 border-white/50 text-white rounded-full text-sm sm:text-base font-bold hover:bg-white/10 transition-colors"
                 >
                   Github
-                  <Github size={18} />
+                  <Github size={16} className="sm:w-[18px] sm:h-[18px]" />
                 </a>
                 <a
                   href={project.Readme}
-                  className="flex items-center gap-2 px-8 py-3 border-2 border-white/50 text-white rounded-full font-bold hover:bg-white/10 transition-colors"
+                  className="flex items-center justify-center gap-2 px-6 sm:px-8 py-2.5 sm:py-3 border-2 border-white/50 text-white rounded-full text-sm sm:text-base font-bold hover:bg-white/10 transition-colors"
                 >
                   Readme
-                  <BookOpen size={18} />
+                  <BookOpen size={16} className="sm:w-[18px] sm:h-[18px]" />
                 </a>
               </div>
             </motion.div>
 
             {/* Dots navigation */}
-            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-3">
+            <div className="absolute bottom-16 sm:bottom-8 left-1/2 transform -translate-x-1/2 flex gap-2 sm:gap-3">
               {filteredProjects.map((_, i) => (
                 <button
                   key={i}
                   onClick={() => setCurrentProject(i)}
-                  className={`w-3 h-3 rounded-full transition-all ${
-                    i === currentProject ? "bg-white w-8" : "bg-white/30"
+                  className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all ${
+                    i === currentProject ? "bg-white w-6 sm:w-8" : "bg-white/30"
                   }`}
                 />
               ))}
@@ -377,9 +441,9 @@ export default function ProjectsPage() {
             <motion.div
               animate={{ y: [0, 10, 0] }}
               transition={{ repeat: Infinity, duration: 1.5 }}
-              className="absolute bottom-20 text-white/50 text-sm"
+              className="absolute bottom-6 sm:bottom-20 text-white/50 text-sm"
             >
-              <ChevronDown size={24} />
+              <ChevronDown size={20} className="sm:w-[24px] sm:h-[24px]" />
             </motion.div>
           </div>
         </motion.div>
