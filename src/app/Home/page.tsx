@@ -137,7 +137,7 @@ export default function HomePage() {
               <span className="font-['Valorant'] text-red-500">Ansh&nbsp;Tiwari</span>
             </h1>
             <p className="text-gray-300 text-lg leading-relaxed">
-              IT Specialist & Full-Stack Developer | A pragmatic, delivery-oriented professional driven by curiosity
+              Fedora KDE User & Full-Stack Developer | A pragmatic, delivery-oriented professional driven by curiosity
               and a commitment to excellence. I&apos;m passionate about crafting high-performance applications that fuse
               <span className="text-white font-semibold"> design </span> and
               <span className="text-white font-semibold"> functionality</span>,
