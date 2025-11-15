@@ -280,6 +280,17 @@ export default function ProjectsPage() {
 
   const project = filteredProjects[currentProject];
 
+  if (!project) {
+    return (
+      <div className="relative w-full h-screen overflow-x-hidden bg-black">
+        <ValorantNavbar />
+        <div className="flex items-center justify-center h-full px-4">
+          <p className="text-white text-lg sm:text-xl text-center">Loading project...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (filteredProjects.length === 0) {
     return (
       <div className="relative w-full h-screen overflow-x-hidden bg-black">
