@@ -29,8 +29,8 @@ export default function AboutMe() {
 
 
       {/* FOOTER */}
-      <footer className="absolute bottom-0 w-full py-4 text-center text-gray-500 text-sm font-['Valorant']">
-        © 2025  ANSH TIWARI
+      <footer className="absolute bottom-0 w-full py-5 text-center text-gray-500 text-sm font-['Valorant']">
+        © 2025   ANSH TIWARI
       </footer>
     </div>
   );
