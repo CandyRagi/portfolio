@@ -3,7 +3,7 @@ import { motion, AnimatePresence, Variants } from "framer-motion";
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import ValorantNavbar from "@/Components/Navbar";
 import { db } from "@/database/firebase";
-import { collection, onSnapshot, query, orderBy, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, onSnapshot, query, orderBy, addDoc, serverTimestamp, getDoc, doc } from "firebase/firestore";
 import { Search, X, ArrowRight, Clock, User, Tag, Plus } from "lucide-react";
 
 interface Blog {
@@ -87,7 +87,6 @@ export default function BlogPage() {
 
   const blogCategories = ["IRL", "Projects", "Anime", "Kdrama", "Web series", "Games", "others"];
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const PASSWORD = "Candy6001";
 
   // Calculate filteredBlogs FIRST before using it in useEffect
   const filteredBlogs = useMemo(() => {
@@ -182,15 +181,28 @@ export default function BlogPage() {
     setUploadModalOpen(true);
   };
 
-  const handleVerifyPassword = () => {
-    if (passwordInput === PASSWORD) {
-      setPasswordModalOpen(false);
-      setPasswordInput("");
-      setPasswordError("");
-      handleSubmitBlog();
-    } else {
-      setPasswordError("Good try noob");
-      setPasswordInput("");
+  const handleVerifyPassword = async () => {
+    try {
+      const passwordDocRef = doc(db, "secrets", "blog_password");
+      const passwordDoc = await getDoc(passwordDocRef);
+
+      if (passwordDoc.exists()) {
+        const correctPassword = passwordDoc.data().value;
+        if (passwordInput === correctPassword) {
+          setPasswordModalOpen(false);
+          setPasswordInput("");
+          setPasswordError("");
+          handleSubmitBlog();
+        } else {
+          setPasswordError("Good try noob");
+          setPasswordInput("");
+        }
+      } else {
+        setPasswordError("Password configuration error. Please contact admin.");
+      }
+    } catch (error) {
+      console.error("Error verifying password:", error);
+      setPasswordError("An error occurred during verification.");
     }
   };
 
