@@ -93,7 +93,7 @@ export default function LinksPage() {
         l.title.toLowerCase().includes(term) ||
         (l.description && l.description.toLowerCase().includes(term)) ||
         l.languages.join(" ").toLowerCase().includes(term);
-      const matchTag = activeTag === "all" || l.tags.includes(activeTag as any);
+      const matchTag = activeTag === "all" || l.tags.includes(activeTag as Link['tags'][number]);
       return matchSearch && matchTag;
     });
   }, [links, search, activeTag]);
