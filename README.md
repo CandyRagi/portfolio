@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎮 Valorant Portfolio: The Carry You Need
 
-## Getting Started
+> "Watch this, I'm going for the ace!" 💥
 
-First, run the development server:
+Yo, welcome to the lobby! This ain't your average NPC portfolio. I'm a cracked developer ready to clutch up your next project. We don't miss shots here.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🦸 Agent Select (About Me)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Role:** Duelist (I entry frag bugs and hold down the production site)  
+**Rank:** my coding rizz is Radiant  
+**Main:** Full Stack Development
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+I'm not here to bait my teammates. I communicate, I execute, and I always plant the spike on time. Whether it's shipping features or debugging production, I got that lineup knowledge.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🔫 Loadout for This Match (Tech Stack)
 
-## Learn More
+My eco is always good. Here's what I'm buying:
 
-To learn more about Next.js, take a look at the following resources:
+- **Primary:** Next.js (The Vandal of frameworks - one tap potential)
+- **Secondary:** TypeScript (The Ghost - reliable and precise)
+- **Utility:**
+  - 🎨 Tailwind CSS (Flash/Stun - making things look clean)
+  - ⚛️ React (The kit - essential for the play)
+  - 🛠️ Node.js (The comms - backend logic)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 💣 Planting the Spike (Getting Started)
 
-## Deploy on Vercel
+Wanna run this locally? Don't be a thrower, follow the strat:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1.  **Install dependencies** (Buy phase):
+    ```bash
+    npm install
+    # or
+    yarn install
+    ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+2.  **Run the dev server** (Rush B):
+    ```basho
+    npm run dev
+    ```
+
+3.  **Open your map** (Browser):
+    Head to [http://localhost:3000](http://localhost:3000) or [https://www.candyragi.info](https://www.candyragi.info) 
+
+## 🤝 Join the Party
+
+If you wanna duo queue on a project or just vibe, hit me up. No toxic comms allowed. No huzz, just wins.
+
+**Status:** Online & Ready to Queue ✅
+
+---
+*Built with pure skill, no aim assist.* 🎯
