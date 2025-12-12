@@ -300,8 +300,8 @@ export default function BlogPage() {
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
                 className={`px-4 py-2 rounded-full text-sm transition-all duration-300 border ${activeCategory === cat
-                    ? "bg-white text-black border-white font-bold"
-                    : "bg-transparent text-gray-400 border-gray-800 hover:border-gray-600 hover:text-white"
+                  ? "bg-white text-black border-white font-bold"
+                  : "bg-transparent text-gray-400 border-gray-800 hover:border-gray-600 hover:text-white"
                   }`}
               >
                 {cat}
@@ -404,7 +404,7 @@ export default function BlogPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[999] p-4 flex items-center justify-center overflow-y-auto"
+            className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[9999] overflow-y-auto px-4 py-8"
             onClick={() => setSelectedBlog(null)}
           >
             <motion.div
@@ -412,7 +412,7 @@ export default function BlogPage() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-4xl bg-zinc-900 border border-white/10 rounded-3xl overflow-hidden shadow-2xl my-8"
+              className="relative w-full max-w-4xl mx-auto bg-zinc-900 border border-white/10 rounded-3xl overflow-hidden shadow-2xl"
             >
               <button
                 onClick={() => setSelectedBlog(null)}
