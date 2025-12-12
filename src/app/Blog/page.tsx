@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import ValorantNavbar from "@/Components/Navbar";
 import { db } from "@/database/firebase";
 import { collection, onSnapshot, query, orderBy, addDoc, serverTimestamp, getDoc, doc } from "firebase/firestore";
-import { Search, X, ArrowRight, Clock, User, Tag, Plus } from "lucide-react";
+import { Search, X, ArrowRight, Clock, User, Tag, Plus, Sparkles } from "lucide-react";
 
 interface Blog {
   id: string;
@@ -22,40 +22,22 @@ const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.02, delayChildren: 0 },
+    transition: { staggerChildren: 0.05 },
   },
 };
 
 const cardVariants: Variants = {
-  hidden: { opacity: 0, y: 30, scale: 0.95 },
+  hidden: { opacity: 0, scale: 0.9 },
   visible: {
     opacity: 1,
-    y: 0,
     scale: 1,
     transition: { duration: 0.3 },
   },
   exit: {
     opacity: 0,
-    y: -30,
-    scale: 0.95,
+    scale: 0.9,
     transition: { duration: 0.2 },
   },
-};
-
-const FloatingParticle: React.FC<{ delay: number; id: number }> = ({ delay, id }) => {
-  const x = Math.sin(id * 12.9898) * 43758.5453;
-  const y = Math.sin(id * 78.233) * 43758.5453;
-  const xPos = ((x - Math.floor(x)) * 100).toFixed(1);
-  const yPos = ((y - Math.floor(y)) * 100).toFixed(1);
-
-  return (
-    <motion.div
-      className="absolute w-1 h-1 bg-red-500/30 rounded-full blur-sm"
-      style={{ left: `${xPos}%`, top: `${yPos}%` }}
-      animate={{ y: [0, -30, 0], opacity: [0, 0.6, 0] }}
-      transition={{ duration: 3, delay, repeat: Infinity }}
-    />
-  );
 };
 
 export default function BlogPage() {
@@ -101,35 +83,6 @@ export default function BlogPage() {
     });
   }, [blogs, search, activeCategory]);
 
-  const observerCallback = useCallback((entries: IntersectionObserverEntry[]) => {
-    entries.forEach((entry) => {
-      const cardId = entry.target.getAttribute('data-card-id');
-      if (cardId) {
-        setVisibleCards((prev) => {
-          const newSet = new Set(prev);
-          if (entry.isIntersecting) {
-            newSet.add(cardId);
-          } else {
-            newSet.delete(cardId);
-          }
-          return newSet;
-        });
-      }
-    });
-  }, []);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(observerCallback, {
-      threshold: 0.1,
-      rootMargin: '50px',
-    });
-
-    const cards = document.querySelectorAll('[data-card-id]');
-    cards.forEach((card) => observer.observe(card));
-
-    return () => observer.disconnect();
-  }, [filteredBlogs, observerCallback]);
-
   useEffect(() => {
     const q = query(collection(db, "blogs"), orderBy("date", "desc"));
     const unsub = onSnapshot(
@@ -162,7 +115,10 @@ export default function BlogPage() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "/" && !selectedBlog && !uploadModalOpen && !summaryBlog) searchInputRef.current?.focus();
+      if (e.key === "/" && !selectedBlog && !uploadModalOpen && !summaryBlog) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
       if (e.key === "Escape") {
         setSelectedBlog(null);
         setSummaryBlog(null);
@@ -282,293 +238,298 @@ export default function BlogPage() {
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-black via-[#0a0a0a] to-[#1a0005] text-white font-['Valorant'] overflow-hidden">
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.2 }}
-        transition={{ duration: 2 }}
-        className="fixed inset-0 bg-gradient-to-r from-red-700 via-pink-600 to-purple-800 blur-[180px] -z-10"
-      />
-
-      <div className="fixed inset-0 overflow-hidden pointer-events-none -z-5">
-        {Array.from({ length: 20 }).map((_, i) => (
-          <FloatingParticle key={i} id={i} delay={i * 0.15} />
-        ))}
-      </div>
-
+    <div className="min-h-screen bg-black text-white font-['Valorant'] selection:bg-red-500/30">
       <ValorantNavbar />
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.05 }}
-        className="max-w-4xl mx-auto px-6 mb-12 relative pt-36"
-      >
-        <div className="relative group">
-          <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-pink-600 rounded-full blur opacity-20 group-hover:opacity-40 transition duration-300" />
-          <div className="relative flex items-center gap-3 bg-white/5 backdrop-blur-xl border border-white/10 px-6 py-4 rounded-full shadow-2xl shadow-red-900/10 transition hover:border-red-500/50">
-            <Search size={20} className="text-red-400 flex-shrink-0" />
-            <input
-              ref={searchInputRef}
-              type="text"
-              placeholder="Search blogs... (Press / to focus)"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-transparent outline-none text-white placeholder-gray-500 font-['Valorant'] text-lg"
-            />
-            {search && (
-              <motion.button
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                onClick={() => setSearch("")}
-                className="text-gray-400 hover:text-white flex-shrink-0"
-              >
-                <X size={18} />
-              </motion.button>
-            )}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleUploadClick}
-              className="flex items-center gap-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded-full transition text-sm font-semibold flex-shrink-0"
-            >
-              
-              + Upload Blog
-            </motion.button>
-          </div>
-        </div>
-      </motion.div>
+      {/* Background Ambience */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-red-900/20 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-purple-900/20 rounded-full blur-[120px]" />
+      </div>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.4, delay: 0.1 }}
-        className="flex justify-center gap-3 px-6 mb-16 flex-wrap"
-      >
-        {categories.map((cat) => (
-          <motion.button
-            key={cat}
-            onClick={() => setActiveCategory(cat)}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            className={`px-5 py-2 rounded-full font-medium transition-all capitalize ${
-              activeCategory === cat
-                ? "bg-red-600 text-white shadow-lg shadow-red-600/50"
-                : "bg-white/5 text-gray-300 border border-white/10 hover:border-red-500/50"
-            }`}
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
+
+        {/* Header Section */}
+        <div className="flex flex-col items-center mb-12 space-y-8">
+
+          {/* Search & Upload Bar */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full max-w-2xl relative group"
           >
-            {cat}
-          </motion.button>
-        ))}
-      </motion.div>
-
-      {isLoadingBlogs ? (
-        <div className="flex justify-center items-center min-h-[400px] w-full">
-          <div className="w-12 h-12 border-3 border-t-red-600 border-white/20 rounded-full animate-spin"></div>
-        </div>
-      ) : (
-        <motion.div
-          key={`${search}-${activeCategory}`}
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="flex flex-wrap justify-center gap-8 px-6 md:px-16 pb-32 min-h-[400px]"
-        >
-          {filteredBlogs.length > 0 ? (
-            filteredBlogs.map((blog) => (
-              <motion.div
-                key={blog.id}
-                data-card-id={blog.id}
-                variants={cardVariants}
-                initial="hidden"
-                animate={visibleCards.has(blog.id) ? "visible" : "hidden"}
-                exit="exit"
-                layout
-                className="group relative w-[300px] h-[320px] cursor-pointer"
-                onClick={() => setSelectedBlog(blog)}
+            <div className="absolute inset-0 bg-gradient-to-r from-red-600/20 to-purple-600/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition duration-500" />
+            <div className="relative flex items-center gap-3 bg-zinc-900/80 backdrop-blur-xl border border-white/10 px-6 py-3 rounded-full shadow-lg transition-all hover:border-white/20">
+              <Search size={20} className="text-gray-400 group-focus-within:text-red-500 transition-colors" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                placeholder="Search blogs... (Press /)"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full bg-transparent outline-none text-white placeholder-gray-500 font-sans text-base"
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <X size={18} />
+                </button>
+              )}
+              <div className="w-px h-6 bg-white/10 mx-2" />
+              <button
+                onClick={handleUploadClick}
+                className="flex items-center gap-2 text-sm font-bold text-red-500 hover:text-red-400 transition-colors whitespace-nowrap"
               >
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-red-600 to-pink-600 rounded-2xl opacity-0 group-hover:opacity-20 transition duration-300 blur -z-10" />
-                <div className="relative rounded-2xl bg-white/5 backdrop-blur-lg border border-white/10 hover:border-red-500/60 transition-all overflow-hidden shadow-xl hover:shadow-2xl hover:shadow-red-900/30 h-full flex flex-col">
-                  {blog.image ? (
-                    <div className="relative h-32 overflow-hidden flex-shrink-0">
-                      <motion.img
-                        src={blog.image}
-                        alt={blog.title}
-                        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-300"
-                        whileHover={{ scale: 1.1 }}
-                        transition={{ duration: 0.3 }}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/40" />
-                      {blog.category && (
-                        <div className="absolute top-3 left-3 flex items-center gap-1 bg-red-600/80 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold">
-                          <Tag size={12} />
-                          {blog.category}
-                        </div>
-                      )}
-                    </div>
-                  ) : null}
-                  <div className="p-4 flex flex-col flex-grow">
-                    <h2 className="text-base font-bold mb-1 text-white group-hover:text-red-400 transition line-clamp-2">
-                      {blog.title}
-                    </h2>
-                    <p className="text-xs text-gray-400 mb-3 line-clamp-1">{blog.subtitle}</p>
-                    <div className="flex flex-wrap gap-2 text-xs text-gray-500 mb-2 mt-auto">
-                      <div className="flex items-center gap-1">
-                        <User size={12} />
-                        {blog.author}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock size={12} />
-                        {blog.readTime} min
-                      </div>
-                    </div>
-                    <p className="text-xs text-gray-600">{blog.date}</p>
-                    <div className="flex justify-between items-center pt-3 border-t border-white/10">
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSummarizeClick(blog);
-                        }}
-                        className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded-full text-xs font-semibold transition"
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" fill="white"/>
-                          <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79-4-4-4z" fill="white"/>
-                        </svg>
-                        Summarize
-                      </motion.button>
-                      <ArrowRight size={14} className="text-red-500" />
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))
-          ) : (
-            <p className="text-gray-400 text-lg text-center w-full py-20">
-              No blogs found. Try adjusting your search.
-            </p>
-          )}
-        </motion.div>
-      )}
+                <Plus size={18} />
+                UPLOAD
+              </button>
+            </div>
+          </motion.div>
 
+          {/* Category Filters */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="flex flex-wrap justify-center gap-2"
+          >
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`px-4 py-2 rounded-full text-sm transition-all duration-300 border ${activeCategory === cat
+                    ? "bg-white text-black border-white font-bold"
+                    : "bg-transparent text-gray-400 border-gray-800 hover:border-gray-600 hover:text-white"
+                  }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </motion.div>
+        </div>
+
+        {/* Blog Grid */}
+        {isLoadingBlogs ? (
+          <div className="flex justify-center items-center min-h-[400px]">
+            <div className="w-12 h-12 border-2 border-t-red-500 border-white/10 rounded-full animate-spin" />
+          </div>
+        ) : (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            <AnimatePresence mode="popLayout">
+              {filteredBlogs.length > 0 ? (
+                filteredBlogs.map((blog) => (
+                  <motion.div
+                    layout
+                    key={blog.id}
+                    variants={cardVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    onClick={() => setSelectedBlog(blog)}
+                    className="group relative bg-zinc-900/50 border border-white/5 rounded-2xl overflow-hidden hover:border-red-500/50 transition-colors duration-300 flex flex-col h-full cursor-pointer"
+                  >
+                    {/* Card Gradient Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                    {/* Image Section */}
+                    {blog.image && (
+                      <div className="relative h-48 overflow-hidden">
+                        <img
+                          src={blog.image}
+                          alt={blog.title}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 to-transparent opacity-80" />
+                        {blog.category && (
+                          <div className="absolute top-4 left-4 px-3 py-1 bg-black/50 backdrop-blur-md border border-white/10 rounded-full text-xs font-bold text-white">
+                            {blog.category}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="relative p-6 flex flex-col flex-grow">
+                      <div className="flex items-center gap-2 text-xs text-gray-400 mb-3">
+                        <span className="flex items-center gap-1"><User size={12} /> {blog.author}</span>
+                        <span>•</span>
+                        <span className="flex items-center gap-1"><Clock size={12} /> {blog.readTime} min</span>
+                      </div>
+
+                      <h3 className="text-xl font-bold mb-2 text-white group-hover:text-red-500 transition-colors line-clamp-2">
+                        {blog.title}
+                      </h3>
+
+                      <p className="text-sm text-gray-400 mb-4 font-sans leading-relaxed line-clamp-2 flex-grow">
+                        {blog.subtitle || blog.content}
+                      </p>
+
+                      <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-auto">
+                        <span className="text-xs text-gray-500 font-sans">{blog.date}</span>
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSummarizeClick(blog);
+                          }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-xs font-medium text-purple-400 hover:text-purple-300 transition-colors"
+                        >
+                          <Sparkles size={12} />
+                          Summarize
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))
+              ) : (
+                <div className="col-span-full text-center py-20 text-gray-500">
+                  No blogs found matching your search.
+                </div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        )}
+      </div>
+
+      {/* Modals */}
       <AnimatePresence>
         {selectedBlog && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[999] p-4"
+            className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[999] p-4 flex items-center justify-center overflow-y-auto"
             onClick={() => setSelectedBlog(null)}
           >
             <motion.div
-              initial={{ scale: 0.85, opacity: 0, y: 20 }}
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.85, opacity: 0, y: 20 }}
-              transition={{ duration: 0.2 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-4xl bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a] text-white p-8 rounded-3xl border border-red-700/30 shadow-2xl shadow-red-900/50 overflow-y-auto max-h-[85vh]"
+              className="relative w-full max-w-4xl bg-zinc-900 border border-white/10 rounded-3xl overflow-hidden shadow-2xl my-8"
             >
-              <motion.button
-                whileHover={{ scale: 1.1, rotate: 90 }}
-                whileTap={{ scale: 0.95 }}
+              <button
                 onClick={() => setSelectedBlog(null)}
-                className="absolute top-6 right-6 p-2 bg-red-600 hover:bg-red-700 text-white rounded-full transition z-10"
+                className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-red-600 rounded-full text-white transition-colors z-10"
               >
-                <X size={24} />
-              </motion.button>
+                <X size={20} />
+              </button>
 
               {selectedBlog.image && (
-                <motion.img
-                  src={selectedBlog.image}
-                  alt={selectedBlog.title}
-                  className="rounded-2xl mb-8 w-full max-h-96 object-cover shadow-lg"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.1 }}
-                />
+                <div className="relative h-64 sm:h-96">
+                  <img
+                    src={selectedBlog.image}
+                    alt={selectedBlog.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-zinc-900/20 to-transparent" />
+                  <div className="absolute bottom-0 left-0 p-8">
+                    <div className="flex flex-wrap gap-3 mb-4">
+                      {selectedBlog.category && (
+                        <span className="px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full">
+                          {selectedBlog.category}
+                        </span>
+                      )}
+                      <span className="px-3 py-1 bg-white/10 backdrop-blur-md text-white text-xs font-bold rounded-full flex items-center gap-1">
+                        <Clock size={12} /> {selectedBlog.readTime} min read
+                      </span>
+                    </div>
+                    <h1 className="text-3xl sm:text-5xl font-bold text-white mb-2">{selectedBlog.title}</h1>
+                    <p className="text-lg text-gray-300 font-sans">{selectedBlog.subtitle}</p>
+                  </div>
+                </div>
               )}
 
-              <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-red-400 to-pink-400 bg-clip-text text-transparent">
-                {selectedBlog.title}
-              </h2>
-              <p className="text-gray-400 text-lg italic mb-6">{selectedBlog.subtitle}</p>
-              <div className="flex flex-wrap gap-4 mb-8 pb-6 border-b border-white/10 text-sm text-gray-400">
-                <div className="flex items-center gap-2">
-                  <User size={16} className="text-red-500" />
-                  {selectedBlog.author}
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock size={16} className="text-red-500" />
-                  {selectedBlog.readTime} min read
-                </div>
-                <div>{selectedBlog.date}</div>
-                {selectedBlog.category && (
-                  <div className="flex items-center gap-2 bg-red-600/20 px-3 py-1 rounded-full">
-                    <Tag size={14} />
-                    {selectedBlog.category}
+              <div className="p-8 sm:p-12">
+                {!selectedBlog.image && (
+                  <div className="mb-8 pb-8 border-b border-white/10">
+                    <div className="flex flex-wrap gap-3 mb-4">
+                      {selectedBlog.category && (
+                        <span className="px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full">
+                          {selectedBlog.category}
+                        </span>
+                      )}
+                      <span className="px-3 py-1 bg-white/10 text-white text-xs font-bold rounded-full flex items-center gap-1">
+                        <Clock size={12} /> {selectedBlog.readTime} min read
+                      </span>
+                    </div>
+                    <h1 className="text-3xl sm:text-5xl font-bold text-white mb-4">{selectedBlog.title}</h1>
+                    <p className="text-xl text-gray-400 font-sans">{selectedBlog.subtitle}</p>
                   </div>
                 )}
-              </div>
 
-              <div className="text-gray-300 leading-relaxed text-lg whitespace-pre-wrap">
-                {selectedBlog.content}
+                <div className="flex items-center justify-between mb-8 text-sm text-gray-500 font-sans">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                      {selectedBlog.author[0]}
+                    </div>
+                    <span>{selectedBlog.author}</span>
+                  </div>
+                  <span>{selectedBlog.date}</span>
+                </div>
+
+                <div className="prose prose-invert max-w-none font-sans text-gray-300 leading-relaxed whitespace-pre-wrap">
+                  {selectedBlog.content}
+                </div>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
+      {/* Summary Modal */}
       <AnimatePresence>
         {summaryBlog && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[999] p-4"
+            className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[1000] p-4 flex items-center justify-center"
             onClick={() => {
               setSummaryBlog(null);
               setSummary(null);
             }}
           >
             <motion.div
-              initial={{ scale: 0.85, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.85, opacity: 0, y: 20 }}
-              transition={{ duration: 0.2 }}
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-2xl bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a] text-white p-8 rounded-3xl border border-purple-700/30 shadow-2xl shadow-purple-900/50 overflow-y-auto max-h-[85vh]"
+              className="relative w-full max-w-2xl bg-zinc-900 border border-purple-500/30 rounded-2xl p-8 shadow-2xl shadow-purple-900/20"
             >
-              <motion.button
-                whileHover={{ scale: 1.1, rotate: 90 }}
-                whileTap={{ scale: 0.95 }}
+              <button
                 onClick={() => {
                   setSummaryBlog(null);
                   setSummary(null);
                 }}
-                className="absolute top-6 right-6 p-2 bg-purple-600 hover:bg-purple-700 text-white rounded-full transition z-10"
+                className="absolute top-4 right-4 p-2 hover:bg-white/10 rounded-full transition-colors"
               >
-                <X size={24} />
-              </motion.button>
+                <X size={20} />
+              </button>
 
-              <h2 className="text-3xl font-bold mb-6 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                Summary of &quot;{summaryBlog.title}&quot;
-              </h2>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 bg-purple-500/20 rounded-xl">
+                  <Sparkles className="text-purple-400" size={24} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">AI Summary</h3>
+                  <p className="text-sm text-gray-400">{summaryBlog.title}</p>
+                </div>
+              </div>
 
               {isLoadingSummary ? (
-                <div className="flex flex-col items-center justify-center min-h-[200px]">
-                  <motion.div
-                    className="w-12 h-12 border-3 border-t-purple-600 border-white/20 rounded-full"
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  />
-                  <p className="text-gray-400 mt-4">Generating summary...</p>
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mb-4" />
+                  <p className="text-sm text-purple-400 animate-pulse">Generating insights...</p>
                 </div>
               ) : (
-                <div className="text-gray-300 leading-relaxed text-lg whitespace-pre-wrap">
+                <div className="prose prose-invert prose-sm max-w-none font-sans text-gray-300">
                   {summary || "No summary available."}
                 </div>
               )}
@@ -577,188 +538,159 @@ export default function BlogPage() {
         )}
       </AnimatePresence>
 
+      {/* Upload Modal */}
       <AnimatePresence>
         {uploadModalOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[999] p-4"
+            className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[1000] p-4 flex items-center justify-center"
             onClick={() => setUploadModalOpen(false)}
           >
             <motion.div
-              initial={{ scale: 0.85, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.85, opacity: 0, y: 20 }}
-              transition={{ duration: 0.2 }}
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-2xl bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a] text-white p-8 rounded-3xl border border-red-700/30 shadow-2xl shadow-red-900/50 overflow-y-auto max-h-[85vh]"
+              className="w-full max-w-2xl bg-zinc-900 border border-white/10 rounded-2xl p-8 shadow-2xl"
             >
-              <motion.button
-                whileHover={{ scale: 1.1, rotate: 90 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setUploadModalOpen(false)}
-                className="absolute top-6 right-6 p-2 bg-red-600 hover:bg-red-700 text-white rounded-full transition z-10"
-              >
-                <X size={24} />
-              </motion.button>
-
-              <h2 className="text-3xl font-bold mb-6 text-white">Upload Blog</h2>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-white">Upload Blog</h2>
+                <button onClick={() => setUploadModalOpen(false)} className="p-2 hover:bg-white/10 rounded-full">
+                  <X size={20} />
+                </button>
+              </div>
 
               {error && (
-                <div className="bg-red-500/20 border border-red-500 text-red-200 p-3 rounded-lg mb-4 text-sm">
+                <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-3 rounded-lg mb-6 text-sm">
                   {error}
                 </div>
               )}
 
-              <div className="space-y-4">
-                <input
-                  type="text"
-                  placeholder="Blog Title *"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full bg-gray-800 text-white p-3 rounded-lg border border-gray-600 focus:border-red-500 outline-none transition-colors"
-                />
+              <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <input
+                    type="text"
+                    placeholder="Title"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    className="bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-red-500 outline-none transition-colors"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Author"
+                    value={formData.author}
+                    onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+                    className="bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-red-500 outline-none transition-colors"
+                  />
+                </div>
 
                 <input
                   type="text"
                   placeholder="Subtitle"
                   value={formData.subtitle}
                   onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
-                  className="w-full bg-gray-800 text-white p-3 rounded-lg border border-gray-600 focus:border-red-500 outline-none transition-colors"
+                  className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-red-500 outline-none transition-colors"
                 />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <select
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    className="bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-red-500 outline-none transition-colors"
+                  >
+                    {blogCategories.map((cat) => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                  <input
+                    type="number"
+                    placeholder="Read Time (min)"
+                    value={formData.readTime}
+                    onChange={(e) => setFormData({ ...formData, readTime: e.target.value })}
+                    className="bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-red-500 outline-none transition-colors"
+                  />
+                </div>
 
                 <input
                   type="text"
-                  placeholder="Author Name *"
-                  value={formData.author}
-                  onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-                  className="w-full bg-gray-800 text-white p-3 rounded-lg border border-gray-600 focus:border-red-500 outline-none transition-colors"
+                  placeholder="Image URL"
+                  value={formData.image}
+                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                  className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-red-500 outline-none transition-colors"
                 />
-
-                <select
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full bg-gray-800 text-white p-3 rounded-lg border border-gray-600 focus:border-red-500 outline-none transition-colors"
-                >
-                  {blogCategories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-
-                <input
-                  type="number"
-                  placeholder="Read Time (minutes)"
-                  value={formData.readTime}
-                  onChange={(e) => setFormData({ ...formData, readTime: e.target.value })}
-                  className="w-full bg-gray-800 text-white p-3 rounded-lg border border-gray-600 focus:border-red-500 outline-none transition-colors"
-                />
-
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Image URL (optional)"
-                    value={formData.image}
-                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                    className="w-full bg-gray-800 text-white p-3 rounded-lg border border-gray-600 focus:border-red-500 outline-none transition-colors"
-                  />
-                  <p className="text-xs text-gray-400 mt-1">
-                    Paste a direct image URL or use an image hosting service like imgur.com
-                  </p>
-                </div>
 
                 <textarea
-                  placeholder="Blog Content *"
+                  placeholder="Content"
                   value={formData.content}
                   onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  maxLength={5000}
-                  className="w-full bg-gray-800 text-white p-3 rounded-lg border border-gray-600 focus:border-red-500 outline-none transition-colors h-40 resize-none"
+                  className="w-full h-40 bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-red-500 outline-none transition-colors resize-none font-sans"
                 />
-                <p className="text-xs text-gray-400">
-                  {formData.content.length}/5000 characters
-                </p>
+              </div>
 
-                <div className="flex justify-end gap-4 pt-4">
-                  <button
-                    onClick={() => {
-                      setUploadModalOpen(false);
-                      setError(null);
-                    }}
-                    className="text-gray-300 hover:text-white transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleAddBlogClick}
-                    disabled={isSubmitting}
-                    className="bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors font-semibold"
-                  >
-                    {isSubmitting ? "Uploading..." : "Add Blog"}
-                  </button>
-                </div>
+              <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-white/10">
+                <button
+                  onClick={() => setUploadModalOpen(false)}
+                  className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAddBlogClick}
+                  disabled={isSubmitting}
+                  className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {isSubmitting ? "Uploading..." : "Upload"}
+                </button>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
+      {/* Password Modal */}
       <AnimatePresence>
         {passwordModalOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[1000] p-4"
-            onClick={() => {
-              setPasswordModalOpen(false);
-              setPasswordInput("");
-              setPasswordError("");
-            }}
+            className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[1001] p-4 flex items-center justify-center"
           >
             <motion.div
-              initial={{ scale: 0.85, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.85, opacity: 0, y: 20 }}
-              transition={{ duration: 0.2 }}
-              onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-md bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a] text-white p-8 rounded-3xl border border-red-700/30 shadow-2xl shadow-red-900/50"
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="w-full max-w-md bg-zinc-900 border border-white/10 rounded-2xl p-8 shadow-2xl"
             >
-              <h2 className="text-2xl font-bold mb-6 text-white">Enter Password</h2>
-
+              <h3 className="text-xl font-bold text-white mb-4">Admin Access</h3>
               {passwordError && (
-                <div className="bg-red-500/20 border border-red-500 text-red-200 p-3 rounded-lg mb-4 text-sm text-center font-semibold">
-                  {passwordError}
-                </div>
+                <p className="text-red-400 text-sm mb-4">{passwordError}</p>
               )}
-
               <input
                 type="password"
                 placeholder="Enter password"
                 value={passwordInput}
                 onChange={(e) => setPasswordInput(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleVerifyPassword()}
+                onKeyDown={(e) => e.key === "Enter" && handleVerifyPassword()}
                 autoFocus
-                className="w-full bg-gray-800 text-white p-3 rounded-lg border border-gray-600 focus:border-red-500 outline-none transition-colors mb-4"
+                className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-red-500 outline-none transition-colors mb-6"
               />
-
-              <div className="flex justify-end gap-4">
+              <div className="flex justify-end gap-3">
                 <button
                   onClick={() => {
                     setPasswordModalOpen(false);
                     setPasswordInput("");
                     setPasswordError("");
                   }}
-                  className="text-gray-300 hover:text-white transition-colors"
+                  className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleVerifyPassword}
-                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors font-semibold"
+                  className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-colors"
                 >
                   Verify
                 </button>
@@ -767,10 +699,6 @@ export default function BlogPage() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      <footer className="absolute bottom-0 w-full py-4 text-center text-gray-500 text-sm font-['Valorant']">
-        © 2025 ANSH TIWARI
-      </footer>
     </div>
   );
 }

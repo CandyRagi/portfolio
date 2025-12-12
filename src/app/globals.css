@@ -27,7 +27,7 @@ body {
   font-family: 'Valorant Font', 'VALORANT', sans-serif !important;
   min-height: 100vh;
   overflow-x: hidden;
-  cursor: url("/images/crosshair.png") 16 16,crosshair;
+  cursor: url("/images/crosshair.png") 16 16, crosshair;
 }
 
 /* Optional — highlight effect */

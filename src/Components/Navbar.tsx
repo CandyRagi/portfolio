@@ -11,11 +11,11 @@ export default function ValorantNavbar() {
   const navLinks = [
     { name: "HOME", href: "/Home" },
     { name: "PROJECTS", href: "/Projects" },
-    
+
     { name: "BLOG", href: "/Blog" },
 
     { name: "Links", href: "/Links" },
-   
+
   ];
 
   return (
@@ -37,16 +37,14 @@ export default function ValorantNavbar() {
             return (
               <Link key={link.name} href={link.href} className="relative group">
                 <span
-                  className={`transition-colors duration-200 ${
-                    isActive ? "text-red-500" : "group-hover:text-red-500"
-                  }`}
+                  className={`transition-colors duration-200 ${isActive ? "text-red-500" : "group-hover:text-red-500"
+                    }`}
                 >
                   {link.name}
                 </span>
                 <span
-                  className={`absolute left-0 -bottom-1 h-[2px] bg-red-500 transition-all ${
-                    isActive ? "w-full" : "w-0 group-hover:w-full"
-                  }`}
+                  className={`absolute left-0 -bottom-1 h-[2px] bg-red-500 transition-all ${isActive ? "w-full" : "w-0 group-hover:w-full"
+                    }`}
                 ></span>
               </Link>
             );
@@ -81,9 +79,8 @@ export default function ValorantNavbar() {
                   key={link.name}
                   href={link.href}
                   onClick={() => setOpen(false)}
-                  className={`block text-lg tracking-widest transition ${
-                    isActive ? "text-red-500" : "hover:text-red-500"
-                  }`}
+                  className={`block text-lg tracking-widest transition ${isActive ? "text-red-500" : "hover:text-red-500"
+                    }`}
                 >
                   {link.name}
                 </Link>
