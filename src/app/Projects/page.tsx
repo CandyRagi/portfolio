@@ -32,7 +32,7 @@ const projectsData: Project[] = [
       "Study Sage is an intelligent study companion app that transforms your notes into mastery through AI-powered insights. Built with Kotlin for native Android performance, it features multiplayer study games powered by Ktor for real-time collaboration. The app leverages Gemini AI to generate smart summaries, quizzes, and study guides from your notes.",
     tags: ["Kotlin", "NodeJS", "Firebase", "Ktor"],
     image: "gradient",
-    link: "#",
+    link: "https://studysage.vercel.app/",
     github: "https://github.com/manavbansal1/StudySage.git",
     Readme: "#",
     animation: "tiles",
@@ -55,6 +55,21 @@ const projectsData: Project[] = [
     bgGradient: "from-black via-[#0a0a0a] to-[#1a0005]",
     accentColor: "from-red-700 via-pink-600 to-purple-800",
     category: "Web Application",
+  },
+  {
+    id: 7,
+    title: "Tap The Huzz",
+    subtitle: "NFC Sharing Android App",
+    description: "Yo, welcome to TapTheHuzz. This ain't your grandma's contact sharing app. Imagine this: You see a baddie across the room. You walk up, drop the line: \"Are you mixed?? Cause you look half mine and half fine\". Then BOOM, you tap your phone on hers and slide into those DMs instantly. No typing, no fumbling, just pure RIZZ. ",
+    tags: ["Kotlin", "HCE"],
+    image: "gradient",
+    link: "https://candyragi.github.io/TapTheHuzz/",
+    github: "https://github.com/CandyRagi/TapTheHuzz",
+    Readme: "https://github.com/CandyRagi/TapTheHuzz/blob/main/README.md",
+    animation: "flipPulse",
+    bgGradient: "from-indigo-950 via-purple-900 to-black",
+    accentColor: "from-indigo-400 via-purple-500 to-pink-600",
+    category: "Mobile Application",
   },
   {
     id: 5,
@@ -116,7 +131,8 @@ const projectsData: Project[] = [
     bgGradient: "from-indigo-950 via-purple-900 to-black",
     accentColor: "from-indigo-400 via-purple-500 to-pink-600",
     category: "System Programming",
-  },
+  }
+  
 ];
 
 const CategoryIcon = ({ category }: { category: string }) => {
