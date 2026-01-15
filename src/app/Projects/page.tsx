@@ -1,10 +1,9 @@
 "use client";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion";
 import { useState } from "react";
 import { BookOpen, ExternalLink, Github, Code2, Terminal, Gamepad2, Smartphone, Globe } from "lucide-react";
 import Navbar from "@/Components/Navbar";
 
-// Placeholder - import your actual ValorantNavbar component
 const ValorantNavbar = () => <Navbar />;
 
 interface Project {
@@ -24,6 +23,21 @@ interface Project {
 }
 
 const projectsData: Project[] = [
+  {
+    id: 8,
+    title: "Kataru",
+    subtitle: "Slick Audiobook Player for Android",
+    description: "A modern audiobook player built because I got tired of clunky apps from 2015. Features include local audiobook playback (MP3, M4B, M4A, FLAC), automatic folder scanning, playback speed control (0.5x-2x), home screen widget, glassmorphic UI with dark mode, and persistent playback position tracking.",
+    tags: ["Kotlin", "Jetpack Compose", "Media3", "Room"],
+    image: "gradient",
+    link: "#",
+    github: "https://github.com/CandyRagi/Kataru",
+    Readme: "#",
+    animation: "tiles",
+    bgGradient: "from-amber-950 via-orange-900 to-black",
+    accentColor: "from-amber-400 via-orange-500 to-red-600",
+    category: "Mobile Application",
+  },
   {
     id: 1,
     title: "Study Sage",
@@ -132,7 +146,6 @@ const projectsData: Project[] = [
     accentColor: "from-indigo-400 via-purple-500 to-pink-600",
     category: "System Programming",
   }
-  
 ];
 
 const CategoryIcon = ({ category }: { category: string }) => {
@@ -145,13 +158,153 @@ const CategoryIcon = ({ category }: { category: string }) => {
   }
 };
 
+// 3D Tilt Project Card Component
+function ProjectCard({ project, index }: { project: Project; index: number }) {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const mouseXSpring = useSpring(x, { stiffness: 300, damping: 30 });
+  const mouseYSpring = useSpring(y, { stiffness: 300, damping: 30 });
+
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["8deg", "-8deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-8deg", "8deg"]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const xPct = (e.clientX - rect.left) / rect.width - 0.5;
+    const yPct = (e.clientY - rect.top) / rect.height - 0.5;
+    x.set(xPct);
+    y.set(yPct);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 30, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -20, scale: 0.95 }}
+      transition={{
+        duration: 0.4,
+        delay: index * 0.05,
+        ease: [0.0, 0.0, 0.2, 1] as const
+      }}
+      style={{
+        rotateX,
+        rotateY,
+        transformStyle: "preserve-3d",
+      }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="group relative bg-zinc-900/50 border border-white/5 rounded-2xl overflow-hidden hover:border-red-500/50 transition-colors duration-300 flex flex-col h-full"
+    >
+      {/* Card Gradient Overlay */}
+      <div className={`absolute inset-0 bg-gradient-to-br ${project.bgGradient} opacity-0 group-hover:opacity-20 transition-opacity duration-500`} />
+
+      {/* Shimmer sweep effect */}
+      <motion.div
+        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full"
+        animate={{
+          translateX: ["−100%", "200%"]
+        }}
+        transition={{
+          duration: 2,
+          repeat: Infinity,
+          repeatDelay: 3,
+          ease: "easeInOut",
+        }}
+        style={{ opacity: 0 }}
+        whileHover={{ opacity: 1 }}
+      />
+
+      <div className="relative p-6 flex flex-col h-full" style={{ transform: "translateZ(20px)" }}>
+        {/* Header */}
+        <div className="flex justify-between items-start mb-4">
+          <motion.div
+            className="p-2 bg-white/5 rounded-lg text-red-400 group-hover:text-white transition-colors"
+            whileHover={{ rotate: 360, scale: 1.1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <CategoryIcon category={project.category} />
+          </motion.div>
+          <div className="flex gap-2">
+            {project.github && (
+              <motion.a
+                href={project.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 text-gray-400 hover:text-white transition-colors"
+                title="View Code"
+                whileHover={{ scale: 1.2, y: -2 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <Github size={18} />
+              </motion.a>
+            )}
+            {project.link !== "#" && (
+              <motion.a
+                href={project.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 text-gray-400 hover:text-white transition-colors"
+                title="View Live"
+                whileHover={{ scale: 1.2, y: -2 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <ExternalLink size={18} />
+              </motion.a>
+            )}
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-grow">
+          <motion.h3
+            className="text-2xl font-bold mb-2 group-hover:text-red-500 transition-colors"
+            style={{ transform: "translateZ(30px)" }}
+          >
+            {project.title}
+          </motion.h3>
+          <p className="text-sm text-gray-400 mb-4 font-sans leading-relaxed">
+            {project.description}
+          </p>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-4 pt-4 border-t border-white/5">
+          <div className="flex flex-wrap gap-2">
+            {project.tags.slice(0, 3).map((tag, i) => (
+              <motion.span
+                key={tag}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.1 * i }}
+                className="text-xs px-2 py-1 bg-white/5 rounded text-gray-300 font-sans hover:bg-red-500/20 hover:text-red-300 transition-colors cursor-default"
+              >
+                {tag}
+              </motion.span>
+            ))}
+            {project.tags.length > 3 && (
+              <span className="text-xs px-2 py-1 text-gray-500 font-sans">
+                +{project.tags.length - 3}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function ProjectsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
 
-  // Get unique categories
   const categories = ["All", ...Array.from(new Set(projectsData.map(p => p.category)))];
 
-  // Filter projects by category
   const filteredProjects = selectedCategory === "All"
     ? projectsData
     : projectsData.filter(p => p.category === selectedCategory);
@@ -160,31 +313,60 @@ export default function ProjectsPage() {
     <div className="min-h-screen bg-black text-white font-['Valorant'] selection:bg-red-500/30">
       <ValorantNavbar />
 
-      {/* Background Ambience */}
+      {/* Animated Background Ambience */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-red-900/20 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-purple-900/20 rounded-full blur-[120px]" />
+        <motion.div
+          className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-red-900/20 rounded-full blur-[120px]"
+          animate={{
+            x: [0, 30, 0],
+            y: [0, -20, 0],
+            scale: [1, 1.1, 1],
+          }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-purple-900/20 rounded-full blur-[120px]"
+          animate={{
+            x: [0, -30, 0],
+            y: [0, 20, 0],
+            scale: [1, 1.15, 1],
+          }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+        />
       </div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
-        {/* Header - Filters Only */}
+        {/* Header - Animated Filters */}
         <div className="flex justify-center mb-12">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.0, 0.0, 0.2, 1] as const }}
             className="flex flex-wrap justify-center gap-2"
           >
-            {categories.map((category) => (
-              <button
+            {categories.map((category, i) => (
+              <motion.button
                 key={category}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
                 onClick={() => setSelectedCategory(category)}
-                className={`px-4 py-2 rounded-full text-sm transition-all duration-300 border ${selectedCategory === category
-                    ? "bg-white text-black border-white font-bold"
-                    : "bg-transparent text-gray-400 border-gray-800 hover:border-gray-600 hover:text-white"
+                className={`px-4 py-2 rounded-full text-sm transition-all duration-300 border relative overflow-hidden ${selectedCategory === category
+                  ? "bg-white text-black border-white font-bold"
+                  : "bg-transparent text-gray-400 border-gray-800 hover:border-gray-600 hover:text-white"
                   }`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
                 {category}
-              </button>
+                {selectedCategory === category && (
+                  <motion.div
+                    layoutId="activeCategory"
+                    className="absolute inset-0 bg-white rounded-full -z-10"
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  />
+                )}
+              </motion.button>
             ))}
           </motion.div>
         </div>
@@ -193,91 +375,23 @@ export default function ProjectsPage() {
         <motion.div
           layout
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          style={{ perspective: "1000px" }}
         >
           <AnimatePresence mode="popLayout">
-            {filteredProjects.map((project) => (
-              <motion.div
-                layout
-                key={project.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.3 }}
-                className="group relative bg-zinc-900/50 border border-white/5 rounded-2xl overflow-hidden hover:border-red-500/50 transition-colors duration-300 flex flex-col h-full"
-              >
-                {/* Card Gradient Overlay */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${project.bgGradient} opacity-0 group-hover:opacity-20 transition-opacity duration-500`} />
-
-                <div className="relative p-6 flex flex-col h-full">
-                  {/* Header */}
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="p-2 bg-white/5 rounded-lg text-red-400 group-hover:text-white transition-colors">
-                      <CategoryIcon category={project.category} />
-                    </div>
-                    <div className="flex gap-2">
-                      {project.github && (
-                        <a
-                          href={project.github}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-2 text-gray-400 hover:text-white transition-colors"
-                          title="View Code"
-                        >
-                          <Github size={18} />
-                        </a>
-                      )}
-                      {project.link !== "#" && (
-                        <a
-                          href={project.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-2 text-gray-400 hover:text-white transition-colors"
-                          title="View Live"
-                        >
-                          <ExternalLink size={18} />
-                        </a>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-grow">
-                    <h3 className="text-2xl font-bold mb-2 group-hover:text-red-500 transition-colors">
-                      {project.title}
-                    </h3>
-                    <p className="text-sm text-gray-400 mb-4 font-sans leading-relaxed">
-                      {project.description}
-                    </p>
-                  </div>
-
-                  {/* Footer */}
-                  <div className="mt-4 pt-4 border-t border-white/5">
-                    <div className="flex flex-wrap gap-2">
-                      {project.tags.slice(0, 3).map((tag) => (
-                        <span
-                          key={tag}
-                          className="text-xs px-2 py-1 bg-white/5 rounded text-gray-300 font-sans"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                      {project.tags.length > 3 && (
-                        <span className="text-xs px-2 py-1 text-gray-500 font-sans">
-                          +{project.tags.length - 3}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
+            {filteredProjects.map((project, index) => (
+              <ProjectCard key={project.id} project={project} index={index} />
             ))}
           </AnimatePresence>
         </motion.div>
 
         {filteredProjects.length === 0 && (
-          <div className="text-center py-20 text-gray-500">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-20 text-gray-500"
+          >
             No projects found in this category.
-          </div>
+          </motion.div>
         )}
       </div>
     </div>
