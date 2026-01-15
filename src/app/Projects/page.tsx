@@ -30,7 +30,7 @@ const projectsData: Project[] = [
     description: "A modern audiobook player built because I got tired of clunky apps from 2015. Features include local audiobook playback (MP3, M4B, M4A, FLAC), automatic folder scanning, playback speed control (0.5x-2x), home screen widget, glassmorphic UI with dark mode, and persistent playback position tracking.",
     tags: ["Kotlin", "Jetpack Compose", "Media3", "Room"],
     image: "gradient",
-    link: "https://candyragi.github.io/Kataru/#",
+    link: "https://candyragi.github.io/Kataru/",
     github: "https://github.com/CandyRagi/Kataru",
     Readme: "#",
     animation: "tiles",
