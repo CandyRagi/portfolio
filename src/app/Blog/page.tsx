@@ -56,6 +56,7 @@ export default function BlogPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoadingBlogs, setIsLoadingBlogs] = useState(true);
   const [visibleCards, setVisibleCards] = useState<Set<string>>(new Set());
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -82,6 +83,13 @@ export default function BlogPage() {
       return matchSearch && matchCategory;
     });
   }, [blogs, search, activeCategory]);
+
+  useEffect(() => {
+    if (!isLoadingBlogs) {
+      const timer = setTimeout(() => setIsLoaded(true), 50);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoadingBlogs]);
 
   useEffect(() => {
     const q = query(collection(db, "blogs"), orderBy("date", "desc"));
@@ -255,7 +263,7 @@ export default function BlogPage() {
           {/* Search & Upload Bar */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={isLoaded ? { opacity: 1, y: 0 } : {}}
             className="w-full max-w-2xl relative group"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-red-600/20 to-purple-600/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition duration-500" />
@@ -291,7 +299,7 @@ export default function BlogPage() {
           {/* Category Filters */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={isLoaded ? { opacity: 1, y: 0 } : {}}
             transition={{ delay: 0.1 }}
             className="flex flex-wrap justify-center gap-2"
           >
@@ -319,7 +327,7 @@ export default function BlogPage() {
           <motion.div
             variants={containerVariants}
             initial="hidden"
-            animate="visible"
+            animate={isLoaded ? "visible" : "hidden"}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
             <AnimatePresence mode="popLayout">

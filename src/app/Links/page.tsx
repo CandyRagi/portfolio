@@ -53,6 +53,7 @@ export default function LinksPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoadingLinks, setIsLoadingLinks] = useState(true);
   const [visibleCards, setVisibleCards] = useState<Set<string>>(new Set());
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -79,6 +80,13 @@ export default function LinksPage() {
       return matchSearch && matchTag;
     });
   }, [links, search, activeTag]);
+
+  useEffect(() => {
+    if (!isLoadingLinks) {
+      const timer = setTimeout(() => setIsLoaded(true), 50);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoadingLinks]);
 
   useEffect(() => {
     const q = query(collection(db, "links"), orderBy("timestamp", "desc"));
@@ -227,7 +235,7 @@ export default function LinksPage() {
           {/* Search & Upload Bar */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={isLoaded ? { opacity: 1, y: 0 } : {}}
             className="w-full max-w-2xl relative group"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-red-600/20 to-purple-600/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition duration-500" />
@@ -263,7 +271,7 @@ export default function LinksPage() {
           {/* Tag Filters */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={isLoaded ? { opacity: 1, y: 0 } : {}}
             transition={{ delay: 0.1 }}
             className="flex flex-wrap justify-center gap-2"
           >
@@ -272,8 +280,8 @@ export default function LinksPage() {
                 key={tag}
                 onClick={() => setActiveTag(tag)}
                 className={`px-4 py-2 rounded-full text-sm transition-all duration-300 border ${activeTag === tag
-                    ? "bg-white text-black border-white font-bold"
-                    : "bg-transparent text-gray-400 border-gray-800 hover:border-gray-600 hover:text-white"
+                  ? "bg-white text-black border-white font-bold"
+                  : "bg-transparent text-gray-400 border-gray-800 hover:border-gray-600 hover:text-white"
                   }`}
               >
                 {tag}
@@ -291,7 +299,7 @@ export default function LinksPage() {
           <motion.div
             variants={containerVariants}
             initial="hidden"
-            animate="visible"
+            animate={isLoaded ? "visible" : "hidden"}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
             <AnimatePresence mode="popLayout">

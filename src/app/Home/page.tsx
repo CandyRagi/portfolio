@@ -162,17 +162,14 @@ export default function HomePage() {
             animate={isLoaded ? "visible" : "hidden"}
           >
             <motion.p className="text-gray-300 text-lg leading-relaxed">
-              {["Fedora KDE User & Full-Stack Developer", "|", "A pragmatic, delivery-oriented professional driven by curiosity",
-                "and a commitment to excellence.", "I'm passionate about crafting high-performance applications that fuse"].map((word, i) => (
-                  <motion.span key={i} variants={wordVariants} className="inline-block mr-1">
-                    {word === "|" ? <br /> : word + " "}
-                  </motion.span>
-                ))}
-              <motion.span variants={wordVariants} className="inline-block text-white font-semibold"> design </motion.span>
-              <motion.span variants={wordVariants} className="inline-block">and</motion.span>
-              <motion.span variants={wordVariants} className="inline-block text-white font-semibold"> functionality</motion.span>
-              <motion.span variants={wordVariants} className="inline-block">,</motion.span>
-              <motion.span variants={wordVariants} className="inline-block mr-1"> creating experiences that feel intuitive and purposeful.</motion.span>
+              <motion.span variants={wordVariants} className="inline">Fedora KDE User &amp; Full-Stack Developer</motion.span>
+              <br />
+              <motion.span variants={wordVariants} className="inline">A pragmatic, delivery-oriented professional driven by curiosity and a commitment to excellence. </motion.span>
+              <motion.span variants={wordVariants} className="inline">I&apos;m passionate about crafting high-performance applications that fuse </motion.span>
+              <motion.span variants={wordVariants} className="inline text-white font-semibold">design</motion.span>
+              <motion.span variants={wordVariants} className="inline"> and </motion.span>
+              <motion.span variants={wordVariants} className="inline text-white font-semibold">functionality</motion.span>
+              <motion.span variants={wordVariants} className="inline">, creating experiences that feel intuitive and purposeful.</motion.span>
             </motion.p>
           </motion.div>
 

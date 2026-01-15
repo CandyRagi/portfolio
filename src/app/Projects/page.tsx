@@ -1,6 +1,6 @@
 "use client";
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BookOpen, ExternalLink, Github, Code2, Terminal, Gamepad2, Smartphone, Globe } from "lucide-react";
 import Navbar from "@/Components/Navbar";
 
@@ -130,6 +130,7 @@ const projectsData: Project[] = [
     bgGradient: "from-orange-950 via-red-900 to-black",
     accentColor: "from-orange-500 via-red-600 to-pink-700",
     category: "Game",
+
   },
   {
     id: 3,
@@ -159,7 +160,7 @@ const CategoryIcon = ({ category }: { category: string }) => {
 };
 
 // 3D Tilt Project Card Component
-function ProjectCard({ project, index }: { project: Project; index: number }) {
+function ProjectCard({ project, index, isVisible, isLoaded }: { project: Project; index: number; isVisible: boolean; isLoaded: boolean }) {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
@@ -185,21 +186,28 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 30, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -20, scale: 0.95 }}
+      initial={false}
+      animate={{
+        opacity: isLoaded && isVisible ? 1 : 0,
+        scale: isLoaded && isVisible ? 1 : 0.8,
+        filter: isLoaded && isVisible ? "blur(0px)" : "blur(4px)",
+        y: isLoaded ? 0 : 30,
+      }}
       transition={{
         duration: 0.4,
         delay: index * 0.05,
-        ease: [0.0, 0.0, 0.2, 1] as const
+        ease: [0.25, 0.1, 0.25, 1],
+        layout: { duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }
       }}
       style={{
-        rotateX,
-        rotateY,
+        rotateX: isVisible ? rotateX : 0,
+        rotateY: isVisible ? rotateY : 0,
         transformStyle: "preserve-3d",
+        pointerEvents: isVisible ? "auto" : "none",
+        display: isVisible ? "flex" : "none",
       }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
+      onMouseMove={isVisible ? handleMouseMove : undefined}
+      onMouseLeave={isVisible ? handleMouseLeave : undefined}
       className="group relative bg-zinc-900/50 border border-white/5 rounded-2xl overflow-hidden hover:border-red-500/50 transition-colors duration-300 flex flex-col h-full"
     >
       {/* Card Gradient Overlay */}
@@ -302,12 +310,22 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
 
 export default function ProjectsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    setIsLoaded(false);
+    const timer = setTimeout(() => setIsLoaded(true), 50);
+    return () => clearTimeout(timer);
+  }, []);
 
   const categories = ["All", ...Array.from(new Set(projectsData.map(p => p.category)))];
 
-  const filteredProjects = selectedCategory === "All"
-    ? projectsData
-    : projectsData.filter(p => p.category === selectedCategory);
+  // Check if a project matches the current filter
+  const isVisible = (project: Project) =>
+    selectedCategory === "All" || project.category === selectedCategory;
+
+  // Get filtered count for "no projects" message
+  const visibleCount = projectsData.filter(isVisible).length;
 
   return (
     <div className="min-h-screen bg-black text-white font-['Valorant'] selection:bg-red-500/30">
@@ -340,7 +358,7 @@ export default function ProjectsPage() {
         <div className="flex justify-center mb-12">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={isLoaded ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, ease: [0.0, 0.0, 0.2, 1] as const }}
             className="flex flex-wrap justify-center gap-2"
           >
@@ -348,8 +366,8 @@ export default function ProjectsPage() {
               <motion.button
                 key={category}
                 initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
+                animate={isLoaded ? { opacity: 1, y: 0 } : {}}
+                transition={{ delay: i * 0.1 + 0.2 }}
                 onClick={() => setSelectedCategory(category)}
                 className={`px-4 py-2 rounded-full text-sm transition-all duration-300 border relative overflow-hidden ${selectedCategory === category
                   ? "bg-white text-black border-white font-bold"
@@ -371,20 +389,27 @@ export default function ProjectsPage() {
           </motion.div>
         </div>
 
-        {/* Projects Grid */}
+        {/* Projects Grid - All projects stay in DOM, visibility animated */}
         <motion.div
           layout
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           style={{ perspective: "1000px" }}
         >
-          <AnimatePresence mode="popLayout">
-            {filteredProjects.map((project, index) => (
-              <ProjectCard key={project.id} project={project} index={index} />
-            ))}
-          </AnimatePresence>
+          {projectsData.map((project, index) => {
+            const visible = isVisible(project);
+            return (
+              <ProjectCard
+                key={project.id}
+                project={project}
+                index={index}
+                isVisible={visible}
+                isLoaded={isLoaded}
+              />
+            );
+          })}
         </motion.div>
 
-        {filteredProjects.length === 0 && (
+        {visibleCount === 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
