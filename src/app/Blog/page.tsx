@@ -22,16 +22,20 @@ const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.05 },
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2
+    },
   },
 };
 
 const cardVariants: Variants = {
-  hidden: { opacity: 0, scale: 0.9 },
+  hidden: { opacity: 0, scale: 0.9, y: 20 },
   visible: {
     opacity: 1,
     scale: 1,
-    transition: { duration: 0.3 },
+    y: 0,
+    transition: { duration: 0.5, ease: [0.25, 0.1, 0.25, 1] },
   },
   exit: {
     opacity: 0,
@@ -300,12 +304,15 @@ export default function BlogPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={isLoaded ? { opacity: 1, y: 0 } : {}}
-            transition={{ delay: 0.1 }}
+            transition={{ duration: 0.6, ease: [0.0, 0.0, 0.2, 1] as const }}
             className="flex flex-wrap justify-center gap-2"
           >
-            {categories.map((cat) => (
-              <button
+            {categories.map((cat, i) => (
+              <motion.button
                 key={cat}
+                initial={{ opacity: 0, y: -10 }}
+                animate={isLoaded ? { opacity: 1, y: 0 } : {}}
+                transition={{ delay: i * 0.1 + 0.2 }}
                 onClick={() => setActiveCategory(cat)}
                 className={`px-4 py-2 rounded-full text-sm transition-all duration-300 border ${activeCategory === cat
                   ? "bg-white text-black border-white font-bold"
@@ -313,7 +320,7 @@ export default function BlogPage() {
                   }`}
               >
                 {cat}
-              </button>
+              </motion.button>
             ))}
           </motion.div>
         </div>
@@ -325,82 +332,94 @@ export default function BlogPage() {
           </div>
         ) : (
           <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate={isLoaded ? "visible" : "hidden"}
+            layout
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
-            <AnimatePresence mode="popLayout">
-              {filteredBlogs.length > 0 ? (
-                filteredBlogs.map((blog) => (
-                  <motion.div
-                    layout
-                    key={blog.id}
-                    variants={cardVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    onClick={() => setSelectedBlog(blog)}
-                    className="group relative bg-zinc-900/50 border border-white/5 rounded-2xl overflow-hidden hover:border-red-500/50 transition-colors duration-300 flex flex-col h-full cursor-pointer"
-                  >
-                    {/* Card Gradient Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            {blogs.map((blog, index) => {
+              const term = search.toLowerCase();
+              const matchSearch =
+                blog.title.toLowerCase().includes(term) ||
+                blog.subtitle.toLowerCase().includes(term) ||
+                blog.author.toLowerCase().includes(term);
+              const matchCategory = activeCategory === "all" || blog.category === activeCategory;
+              const visible = matchSearch && matchCategory;
 
-                    {/* Image Section */}
-                    {blog.image && (
-                      <div className="relative h-48 overflow-hidden">
-                        <img
-                          src={blog.image}
-                          alt={blog.title}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 to-transparent opacity-80" />
-                        {blog.category && (
-                          <div className="absolute top-4 left-4 px-3 py-1 bg-black/50 backdrop-blur-md border border-white/10 rounded-full text-xs font-bold text-white">
-                            {blog.category}
-                          </div>
-                        )}
-                      </div>
-                    )}
+              return (
+                <motion.div
+                  layout
+                  key={blog.id}
+                  initial={false}
+                  animate={{
+                    opacity: isLoaded && visible ? 1 : 0,
+                    scale: isLoaded && visible ? 1 : 0.8,
+                    filter: isLoaded && visible ? "blur(0px)" : "blur(4px)",
+                    y: isLoaded ? 0 : 30,
+                  }}
+                  transition={{
+                    duration: 0.4,
+                    delay: index * 0.05,
+                    ease: [0.25, 0.1, 0.25, 1],
+                    layout: { duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }
+                  }}
+                  style={{
+                    display: visible ? "flex" : "none",
+                  }}
+                  onClick={() => setSelectedBlog(blog)}
+                  className="group relative bg-zinc-900/50 border border-white/5 rounded-2xl overflow-hidden hover:border-red-500/50 transition-colors duration-300 flex flex-col h-full cursor-pointer"
+                >
+                  {/* Card Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                    <div className="relative p-6 flex flex-col flex-grow">
-                      <div className="flex items-center gap-2 text-xs text-gray-400 mb-3">
-                        <span className="flex items-center gap-1"><User size={12} /> {blog.author}</span>
-                        <span>•</span>
-                        <span className="flex items-center gap-1"><Clock size={12} /> {blog.readTime} min</span>
-                      </div>
-
-                      <h3 className="text-xl font-bold mb-2 text-white group-hover:text-red-500 transition-colors line-clamp-2">
-                        {blog.title}
-                      </h3>
-
-                      <p className="text-sm text-gray-400 mb-4 font-sans leading-relaxed line-clamp-2 flex-grow">
-                        {blog.subtitle || blog.content}
-                      </p>
-
-                      <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-auto">
-                        <span className="text-xs text-gray-500 font-sans">{blog.date}</span>
-
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSummarizeClick(blog);
-                          }}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-xs font-medium text-purple-400 hover:text-purple-300 transition-colors"
-                        >
-                          <Sparkles size={12} />
-                          Summarize
-                        </button>
-                      </div>
+                  {/* Image Section */}
+                  {blog.image && (
+                    <div className="relative h-48 overflow-hidden">
+                      <img
+                        src={blog.image}
+                        alt={blog.title}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 to-transparent opacity-80" />
+                      {blog.category && (
+                        <div className="absolute top-4 left-4 px-3 py-1 bg-black/50 backdrop-blur-md border border-white/10 rounded-full text-xs font-bold text-white">
+                          {blog.category}
+                        </div>
+                      )}
                     </div>
-                  </motion.div>
-                ))
-              ) : (
-                <div className="col-span-full text-center py-20 text-gray-500">
-                  No blogs found matching your search.
-                </div>
-              )}
-            </AnimatePresence>
+                  )}
+
+                  <div className="relative p-6 flex flex-col flex-grow">
+                    <div className="flex items-center gap-2 text-xs text-gray-400 mb-3">
+                      <span className="flex items-center gap-1"><User size={12} /> {blog.author}</span>
+                      <span>•</span>
+                      <span className="flex items-center gap-1"><Clock size={12} /> {blog.readTime} min</span>
+                    </div>
+
+                    <h3 className="text-xl font-bold mb-2 text-white group-hover:text-red-500 transition-colors line-clamp-2">
+                      {blog.title}
+                    </h3>
+
+                    <p className="text-sm text-gray-400 mb-4 font-sans leading-relaxed line-clamp-2 flex-grow">
+                      {blog.subtitle || blog.content}
+                    </p>
+
+                    <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-auto">
+                      <span className="text-xs text-gray-500 font-sans">{blog.date}</span>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSummarizeClick(blog);
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-xs font-medium text-purple-400 hover:text-purple-300 transition-colors"
+                      >
+                        <Sparkles size={12} />
+                        Summarize
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
           </motion.div>
         )}
       </div>

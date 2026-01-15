@@ -22,16 +22,20 @@ const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.05 },
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2
+    },
   },
 };
 
 const cardVariants: Variants = {
-  hidden: { opacity: 0, scale: 0.9 },
+  hidden: { opacity: 0, scale: 0.9, y: 20 },
   visible: {
     opacity: 1,
     scale: 1,
-    transition: { duration: 0.3 },
+    y: 0,
+    transition: { duration: 0.5, ease: [0.25, 0.1, 0.25, 1] },
   },
   exit: {
     opacity: 0,
@@ -272,12 +276,15 @@ export default function LinksPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={isLoaded ? { opacity: 1, y: 0 } : {}}
-            transition={{ delay: 0.1 }}
+            transition={{ duration: 0.6, ease: [0.0, 0.0, 0.2, 1] as const }}
             className="flex flex-wrap justify-center gap-2"
           >
-            {tags.map((tag) => (
-              <button
+            {tags.map((tag, i) => (
+              <motion.button
                 key={tag}
+                initial={{ opacity: 0, y: -10 }}
+                animate={isLoaded ? { opacity: 1, y: 0 } : {}}
+                transition={{ delay: i * 0.1 + 0.2 }}
                 onClick={() => setActiveTag(tag)}
                 className={`px-4 py-2 rounded-full text-sm transition-all duration-300 border ${activeTag === tag
                   ? "bg-white text-black border-white font-bold"
@@ -285,7 +292,7 @@ export default function LinksPage() {
                   }`}
               >
                 {tag}
-              </button>
+              </motion.button>
             ))}
           </motion.div>
         </div>
@@ -297,87 +304,99 @@ export default function LinksPage() {
           </div>
         ) : (
           <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate={isLoaded ? "visible" : "hidden"}
+            layout
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
-            <AnimatePresence mode="popLayout">
-              {filteredLinks.length > 0 ? (
-                filteredLinks.map((link) => (
-                  <motion.div
-                    layout
-                    key={link.id}
-                    variants={cardVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    onClick={() => window.open(link.websiteUrl, '_blank')}
-                    className="group relative bg-zinc-900/50 border border-white/5 rounded-2xl overflow-hidden hover:border-red-500/50 transition-colors duration-300 flex flex-col h-full cursor-pointer"
-                  >
-                    {/* Card Gradient Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            {links.map((link, index) => {
+              const term = search.toLowerCase();
+              const matchSearch =
+                link.title.toLowerCase().includes(term) ||
+                (link.description && link.description.toLowerCase().includes(term)) ||
+                link.languages.join(" ").toLowerCase().includes(term);
+              const matchTag = activeTag === "all" || link.tags.includes(activeTag as Link['tags'][number]);
+              const visible = matchSearch && matchTag;
 
-                    {/* Image Section */}
-                    {link.imageUrl && (
-                      <div className="relative h-48 overflow-hidden">
-                        <img
-                          src={link.imageUrl}
-                          alt={link.title}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 to-transparent opacity-80" />
+              return (
+                <motion.div
+                  layout
+                  key={link.id}
+                  initial={false}
+                  animate={{
+                    opacity: isLoaded && visible ? 1 : 0,
+                    scale: isLoaded && visible ? 1 : 0.8,
+                    filter: isLoaded && visible ? "blur(0px)" : "blur(4px)",
+                    y: isLoaded ? 0 : 30,
+                  }}
+                  transition={{
+                    duration: 0.4,
+                    delay: index * 0.05,
+                    ease: [0.25, 0.1, 0.25, 1],
+                    layout: { duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }
+                  }}
+                  style={{
+                    display: visible ? "flex" : "none",
+                  }}
+                  onClick={() => window.open(link.websiteUrl, '_blank')}
+                  className="group relative bg-zinc-900/50 border border-white/5 rounded-2xl overflow-hidden hover:border-red-500/50 transition-colors duration-300 flex flex-col h-full cursor-pointer"
+                >
+                  {/* Card Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                        <div className="absolute top-4 left-4 flex flex-wrap gap-2">
-                          <span className="px-3 py-1 bg-black/50 backdrop-blur-md border border-white/10 rounded-full text-xs font-bold text-white flex items-center gap-1">
-                            {link.projectType === 'Group Project' && <Users size={12} />}
-                            {link.projectType === 'Solo Project' && <User size={12} />}
-                            {link.projectType === 'Assignment' && <Tag size={12} />}
-                            {link.projectType}
-                          </span>
-                        </div>
-                      </div>
-                    )}
+                  {/* Image Section */}
+                  {link.imageUrl && (
+                    <div className="relative h-48 overflow-hidden">
+                      <img
+                        src={link.imageUrl}
+                        alt={link.title}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 to-transparent opacity-80" />
 
-                    <div className="relative p-6 flex flex-col flex-grow">
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        {link.tags.slice(0, 3).map(tag => (
-                          <span key={tag} className="text-[10px] uppercase tracking-wider font-bold text-red-400 bg-red-500/10 px-2 py-1 rounded">
-                            {tag}
-                          </span>
-                        ))}
-                        {link.tags.length > 3 && (
-                          <span className="text-[10px] text-gray-500 px-2 py-1">+ {link.tags.length - 3}</span>
-                        )}
-                      </div>
-
-                      <h3 className="text-xl font-bold mb-2 text-white group-hover:text-red-500 transition-colors line-clamp-1">
-                        {link.title}
-                      </h3>
-
-                      <p className="text-sm text-gray-400 mb-4 font-sans leading-relaxed line-clamp-2 flex-grow">
-                        {link.description}
-                      </p>
-
-                      <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-auto">
-                        <div className="flex items-center gap-2 text-xs text-gray-500 font-sans">
-                          <Code size={12} />
-                          <span className="truncate max-w-[150px]">{link.languages.join(', ')}</span>
-                        </div>
-
-                        <div className="flex items-center gap-1 text-xs font-bold text-white group-hover:text-red-400 transition-colors">
-                          VISIT <ArrowRight size={12} />
-                        </div>
+                      <div className="absolute top-4 left-4 flex flex-wrap gap-2">
+                        <span className="px-3 py-1 bg-black/50 backdrop-blur-md border border-white/10 rounded-full text-xs font-bold text-white flex items-center gap-1">
+                          {link.projectType === 'Group Project' && <Users size={12} />}
+                          {link.projectType === 'Solo Project' && <User size={12} />}
+                          {link.projectType === 'Assignment' && <Tag size={12} />}
+                          {link.projectType}
+                        </span>
                       </div>
                     </div>
-                  </motion.div>
-                ))
-              ) : (
-                <div className="col-span-full text-center py-20 text-gray-500">
-                  No links found matching your search.
-                </div>
-              )}
-            </AnimatePresence>
+                  )}
+
+                  <div className="relative p-6 flex flex-col flex-grow">
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {link.tags.slice(0, 3).map(tag => (
+                        <span key={tag} className="text-[10px] uppercase tracking-wider font-bold text-red-400 bg-red-500/10 px-2 py-1 rounded">
+                          {tag}
+                        </span>
+                      ))}
+                      {link.tags.length > 3 && (
+                        <span className="text-[10px] text-gray-500 px-2 py-1">+ {link.tags.length - 3}</span>
+                      )}
+                    </div>
+
+                    <h3 className="text-xl font-bold mb-2 text-white group-hover:text-red-500 transition-colors line-clamp-1">
+                      {link.title}
+                    </h3>
+
+                    <p className="text-sm text-gray-400 mb-4 font-sans leading-relaxed line-clamp-2 flex-grow">
+                      {link.description}
+                    </p>
+
+                    <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-auto">
+                      <div className="flex items-center gap-2 text-xs text-gray-500 font-sans">
+                        <Code size={12} />
+                        <span className="truncate max-w-[150px]">{link.languages.join(', ')}</span>
+                      </div>
+
+                      <div className="flex items-center gap-1 text-xs font-bold text-white group-hover:text-red-400 transition-colors">
+                        VISIT <ArrowRight size={12} />
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
           </motion.div>
         )}
       </div>
