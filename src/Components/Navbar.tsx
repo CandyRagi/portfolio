@@ -11,8 +11,6 @@ export default function ValorantNavbar() {
   const navLinks = [
     { name: "HOME", href: "/Home" },
     { name: "PROJECTS", href: "/Projects" },
-    { name: "BLOG", href: "/Blog" },
-    { name: "Links", href: "/Links" },
   ];
 
   // Staggered animation variants for nav links
