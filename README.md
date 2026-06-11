@@ -1,53 +1,26 @@
-# 🎮 Valorant Portfolio: The Carry You Need
+# Ansh Tiwari — Portfolio
 
-> "Watch this, I'm going for the ace!" 💥
+Personal portfolio site built with Next.js.
 
-Yo, welcome to the lobby! This ain't your average NPC portfolio. I'm a cracked developer ready to clutch up your next project. We don't miss shots here.
+Live at [candyragi.info](https://www.candyragi.info)
 
-## 🦸 Agent Select (About Me)
+## Stack
 
-**Role:** Duelist (I entry frag bugs and hold down the production site)  
-**Rank:** my coding rizz is Radiant  
-**Main:** Full Stack Development
+- Next.js
+- TypeScript
+- Tailwind CSS
+- Framer Motion
 
-I'm not here to bait my teammates. I communicate, I execute, and I always plant the spike on time. Whether it's shipping features or debugging production, I got that lineup knowledge.
+## Getting Started
 
-## 🔫 Loadout for This Match (Tech Stack)
+```bash
+npm install
+npm run dev
+```
 
-My eco is always good. Here's what I'm buying:
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-- **Primary:** Next.js (The Vandal of frameworks - one tap potential)
-- **Secondary:** TypeScript (The Ghost - reliable and precise)
-- **Utility:**
-  - 🎨 Tailwind CSS (Flash/Stun - making things look clean)
-  - ⚛️ React (The kit - essential for the play)
-  - 🛠️ Node.js (The comms - backend logic)
+## Contact
 
-
-## 💣 Planting the Spike (Getting Started)
-
-Wanna run this locally? Don't be a thrower, follow the strat:
-
-1.  **Install dependencies** (Buy phase):
-    ```bash
-    npm install
-    # or
-    yarn install
-    ```
-
-2.  **Run the dev server** (Rush B):
-    ```basho
-    npm run dev
-    ```
-
-3.  **Open your map** (Browser):
-    Head to [http://localhost:3000](http://localhost:3000) or [https://www.candyragi.info](https://www.candyragi.info) 
-
-## 🤝 Join the Party
-
-If you wanna duo queue on a project or just vibe, hit me up. No toxic comms allowed. No huzz, just wins.
-
-**Status:** Online & Ready to Queue ✅
-
----
-*Built with pure skill, no aim assist.* 🎯
+- GitHub: [CandyRagi](https://github.com/CandyRagi)
+- LinkedIn: [Ansh Tiwari](https://www.linkedin.com/in/ansh-tiwari-a19986202/)
