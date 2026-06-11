@@ -160,7 +160,7 @@ const projectsData: Project[] = [
     animation: "tiles",
     bgGradient: "from-slate-950 via-blue-900 to-black",
     accentColor: "from-blue-400 via-indigo-500 to-cyan-600",
-    category: "Systems Programming",
+    category: "System Programming",
   }
 ];
 
